@@ -1,4 +1,4 @@
-# EasiTimerBackupReforged
+# EasyTimerBackupReforged
 
 ### A lightweight and simple timed backup program
 

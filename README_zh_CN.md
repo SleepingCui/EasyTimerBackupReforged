@@ -1,4 +1,4 @@
-# EasiTimerBackupReforged
+# EasyTimerBackupReforged
 
 ### EasyTimerBackup的重制版，一个轻便简单的定时备份程序
 
