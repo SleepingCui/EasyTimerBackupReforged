@@ -13,7 +13,7 @@ public class config_write {
             throw new RuntimeException(e);
         }
         String cfg = """
-                EasiTimerBackup Config
+                EasyTimerBackup Config
                 v0.0.1
                 =================================================================
                 Do not change the number of lines in the configuration file!
