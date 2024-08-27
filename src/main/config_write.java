@@ -12,7 +12,8 @@ public class config_write {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        String cfg = """  // Configuration file contents
+        // Configuration file contents
+        String cfg = """  
                 EasyTimerBackup Config
                 v0.0.1
                 =================================================================
