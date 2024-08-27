@@ -5,10 +5,13 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.util.logging.Logger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+
 public class pack {
+    static Logger logger = Logger.getLogger(pack.class.getName());
     private static void CopyFiles(File source, File target) {
         if (source.isDirectory()) {
             if (!target.exists()) {
@@ -24,9 +27,9 @@ public class pack {
         } else {
             try {
                 Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("INFO Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
+                logger.info("INFO Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             } catch (IOException e) {
-                System.out.println("Error copying: " + source.getAbsolutePath());
+                logger.info("Error copying: " + source.getAbsolutePath());
                 e.printStackTrace();
             }
         }
@@ -64,9 +67,9 @@ public class pack {
 
             directory.delete();
 
-            System.out.println("INFO All files and directories in " + path + " have been deleted.");
+            logger.info("INFO All files and directories in " + path + " have been deleted.");
         } else {
-            System.out.println("ERROR The directory does not exist.");
+            logger.info("ERROR The directory does not exist.");
         }
     }
 
@@ -88,9 +91,9 @@ public class pack {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String timestamp = LocalDateTime.now().format(formatter);
         String zipFilePath = ZipDirectory.toString() + "backup-" + timestamp + ".zip";
-        System.out.println("INFO ZipDirectory: " + zipFilePath);
-        System.out.println("INFO SourceDirectory: " + sourceDir);
-        System.out.println("INFO TempDirectory: " + TempDirectory);
+        logger.info("INFO ZipDirectory: " + zipFilePath);
+        logger.info("INFO SourceDirectory: " + sourceDir);
+        logger.info("INFO TempDirectory: " + TempDirectory);
 
         try (FileOutputStream fos = new FileOutputStream(zipFilePath)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
@@ -102,8 +105,9 @@ public class pack {
             throw new RuntimeException(e);
         }
         removeTemp(TempDirectory.toString());
-        System.out.println("INFO Backup completed: " + zipFilePath);
+        logger.info("INFO Backup completed: " + zipFilePath);
     }
+
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {
         try{
             Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));

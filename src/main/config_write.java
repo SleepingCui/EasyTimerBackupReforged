@@ -1,8 +1,10 @@
 package main;
 
 import java.io.*;
+import java.util.logging.Logger;
 
 public class config_write {
+    static Logger logger = Logger.getLogger(config_write.class.getName());
     private static void WritCfg(){
         File config_file = new File("config.cfg");
         try {
@@ -58,12 +60,12 @@ public class config_write {
     public static void IsFileEsixt(){
         File config_file = new File("config.cfg");if (!config_file.exists()){
 
-            System.out.println("Generating configuration file...");
+            logger.info("Generating configuration file...");
             WritCfg();
             System.exit(0);
         }
         else{
-            System.out.println("Configuration file already exists!");
+            logger.info("Configuration file already exists!");
         }
 
     }

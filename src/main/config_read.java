@@ -1,8 +1,10 @@
 package main;
 import java.io.*;
+import java.util.logging.Logger;
 import java.util.Map;
 import java.util.HashMap;
 public class config_read {
+    static Logger logger = Logger.getLogger(config_read.class.getName());
     @SuppressWarnings("CallToPrintStackTrace")
     private static String f_read_config(int lineToRead, String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -44,7 +46,7 @@ public class config_read {
 
         // Check if readed_data is empty
         if (readed_data == null || readed_data.isEmpty()) {
-            System.out.println("The read data is empty!");
+            logger.warning("The read data is empty!");
             System.exit(1); // Terminate the program
         }
 
