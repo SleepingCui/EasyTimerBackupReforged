@@ -2,7 +2,7 @@
 
 ### A lightweight and simple timed backup program
 
-[中文](https://github.com/SleepingCui/EasiTimerBackupReforged/blob/master/README_zh_CN.md)
+[中文](https://github.com/SleepingCui/EasyTimerBackupReforged/blob/master/README_zh_CN.md)
 
 ## Features
 
