@@ -26,7 +26,7 @@ public class timer {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                logger.info("Backup Start");
+                logger.info("Backup Start!");
                 try{pack.PackBackup(read_source_path,read_temp_path,read_backup_path);}
                 catch (FileNotFoundException e) {throw new RuntimeException(e);}
 

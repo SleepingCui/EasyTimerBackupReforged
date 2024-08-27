@@ -27,9 +27,9 @@ public class pack {
         } else {
             try {
                 Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                logger.info("INFO Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
+                logger.info("Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             } catch (IOException e) {
-                logger.info("Error copying: " + source.getAbsolutePath());
+                logger.warning("Error copying: " + source.getAbsolutePath());
                 e.printStackTrace();
             }
         }
@@ -67,9 +67,9 @@ public class pack {
 
             directory.delete();
 
-            logger.info("INFO All files and directories in " + path + " have been deleted.");
+            logger.info(" All files and directories in " + path + " have been deleted.");
         } else {
-            logger.info("ERROR The directory does not exist.");
+            logger.warning(" The directory does not exist.");
         }
     }
 
@@ -84,16 +84,18 @@ public class pack {
 
         file.delete();
     }
-    private static void Pack(File SourceDirectory,File TempDirectory,File ZipDirectory) throws FileNotFoundException {
+    private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws FileNotFoundException {
+        // Record the start time
+        long startTime = System.nanoTime();
 
         CopyFiles(SourceDirectory, TempDirectory);
         String sourceDir = TempDirectory.toString();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String timestamp = LocalDateTime.now().format(formatter);
         String zipFilePath = ZipDirectory.toString() + "backup-" + timestamp + ".zip";
-        logger.info("INFO ZipDirectory: " + zipFilePath);
-        logger.info("INFO SourceDirectory: " + sourceDir);
-        logger.info("INFO TempDirectory: " + TempDirectory);
+        logger.info("ZipDirectory: " + zipFilePath);
+        logger.info("SourceDirectory: " + sourceDir);
+        logger.info("TempDirectory: " + TempDirectory);
 
         try (FileOutputStream fos = new FileOutputStream(zipFilePath)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
@@ -104,8 +106,14 @@ public class pack {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
         removeTemp(TempDirectory.toString());
-        logger.info("INFO Backup completed: " + zipFilePath);
+        logger.info("Backup completed: " + zipFilePath);
+
+        // Record the end time and calculate the elapsed time
+        long endTime = System.nanoTime();
+        double durationInSeconds = (endTime - startTime) / 1_000_000_000.0; // Convert nanoseconds to seconds
+        logger.info("Backup process completed in: " + durationInSeconds + " seconds");
     }
 
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {

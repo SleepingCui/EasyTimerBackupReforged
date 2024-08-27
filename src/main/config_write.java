@@ -64,9 +64,7 @@ public class config_write {
             WritCfg();
             System.exit(0);
         }
-        else{
-            logger.info("Configuration file already exists!");
-        }
+
 
     }
 
