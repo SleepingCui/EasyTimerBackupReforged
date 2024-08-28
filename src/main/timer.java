@@ -42,7 +42,7 @@ public class timer {
         scheduler.scheduleAtFixedRate(() -> {
             logger.info("Backup Start!");
             try {
-                pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
+                pack.PackBackup(read_source_path, read_temp_path, read_backup_path); //TODO 判断条件
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
