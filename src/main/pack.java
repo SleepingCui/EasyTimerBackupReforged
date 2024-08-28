@@ -55,7 +55,6 @@ public class pack {
             }
         }
     }
-
     private static void removeTemp(String path) {
         File directory = new File(path);
 
@@ -118,15 +117,12 @@ public class pack {
     }
 
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {
-
-            try{
-                Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
-            }
-            catch (FileNotFoundException e){
-                e.printStackTrace();
-            }
-
+        try{
+            Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
+        }
+        catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
     }
-
 
 }
