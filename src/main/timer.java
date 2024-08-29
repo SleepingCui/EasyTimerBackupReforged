@@ -19,6 +19,7 @@ public class timer {
         String read_backup_path = config_read.get_config("backup_dir");
 
         logger.info("Starting backup...");
+        logger.info("Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
 
         // 创建一个调度执行器
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -36,7 +37,7 @@ public class timer {
         }
 
         long initialDelay = nextBackup.getTimeInMillis() - now.getTimeInMillis();
-        long period = 24 * 60 * 60; // 每24小时执行一次
+        long period = 24 * 60 * 60 * 1000; // 每24小时执行一次，单位为毫秒
 
         // 安排任务
         scheduler.scheduleAtFixedRate(() -> {
@@ -46,6 +47,9 @@ public class timer {
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }, initialDelay, period, TimeUnit.SECONDS);
+        }, initialDelay, period, TimeUnit.MILLISECONDS); // 确保使用毫秒作为单位
+
+
+
     }
 }

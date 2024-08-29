@@ -92,7 +92,7 @@ public class pack {
         String sourceDir = TempDirectory.toString();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String timestamp = LocalDateTime.now().format(formatter);
-        String zipFilePath = ZipDirectory.toString() + "backup-" + timestamp + ".zip";
+        String zipFilePath = ZipDirectory.toString() + "\\backup-" + timestamp + ".zip";
         logger.info("ZipDirectory: " + zipFilePath);
         logger.info("SourceDirectory: " + sourceDir);
         logger.info("TempDirectory: " + TempDirectory);
