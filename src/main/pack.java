@@ -8,7 +8,7 @@ import java.util.zip.ZipOutputStream;
 import java.util.logging.Logger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-
+import java.text.DecimalFormat;
 
 public class pack {
     static Logger logger = Logger.getLogger(pack.class.getName());
@@ -84,6 +84,18 @@ public class pack {
 
         file.delete();
     }
+
+    private static String getFileSize(String filename) {
+        File file = new File(filename);
+        if (!file.exists() || !file.isFile()) {
+            logger.warning("The file " + filename + " does not exist.");
+            return "-1";
+        }
+        float sizeInBytes = file.length();
+        float sizeInGB = sizeInBytes / (1024 * 1024 * 1024);
+        DecimalFormat df = new DecimalFormat("#.00");
+        return df.format(sizeInGB) + " GB";
+    }
     private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws FileNotFoundException {
         // Record the start time
         long startTime = System.nanoTime();
@@ -114,6 +126,7 @@ public class pack {
         long endTime = System.nanoTime();
         double durationInSeconds = (endTime - startTime) / 1_000_000_000.0; // Convert nanoseconds to seconds
         logger.info("Backup process completed in: " + durationInSeconds + " seconds");
+        logger.info("size of backup file: " + getFileSize(zipFilePath));
     }
 
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {
