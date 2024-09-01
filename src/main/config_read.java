@@ -34,6 +34,9 @@ public class config_read {
         targetMap.put("source_dir", 32);
         targetMap.put("temp_dir", 33);
         targetMap.put("backup_dir", 34);
+        targetMap.put("uploadenabled",40);
+        targetMap.put("server_ip",45);
+        targetMap.put("server_port",48);
 
         Integer lineNumber = targetMap.get(target);
 

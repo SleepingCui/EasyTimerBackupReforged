@@ -7,8 +7,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-public class timer {
-    static Logger logger = Logger.getLogger(timer.class.getName());
+public class Timer {
+    static Logger logger = Logger.getLogger(Timer.class.getName());
 
     public static void timer_backup() {
         String read_hour = config_read.get_config("time_hour");
@@ -43,7 +43,7 @@ public class timer {
         scheduler.scheduleAtFixedRate(() -> {
             logger.info("Backup Start!");
             try {
-                pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
+                Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
             } catch (FileNotFoundException e) {
                 throw new RuntimeException(e);
             }

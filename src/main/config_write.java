@@ -49,7 +49,21 @@ public class config_write {
                                 
                                 
                 --------------------
-                                
+                 
+                打开/关闭文件上传功能(y/n) (40)            
+                Enable/disable file upload function(y/n) (40)
+                -------Config-------
+                                           
+                --------------------
+                服务器IP 端口号 (45,48)
+                Server IP Port
+                -------IP-------
+                                           
+                ----------------
+                ------Port------
+                                           
+                ----------------
+                
                 """;
         try {
             PrintStream ps = new PrintStream(new FileOutputStream(config_file));

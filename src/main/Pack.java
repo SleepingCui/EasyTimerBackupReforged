@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
 
-public class pack {
-    static Logger logger = Logger.getLogger(pack.class.getName());
+public class Pack {
+    static Logger logger = Logger.getLogger(Pack.class.getName());
     private static void CopyFiles(File source, File target) {
         if (source.isDirectory()) {
             if (!target.exists()) {

@@ -1,8 +1,8 @@
 package main;
-public class main {
+public class Main {
 
     public static void main(String[] args) {
         System.out.println("Loading EasyTimerBackupReforged ...\n");
-        timer.timer_backup();
+        Timer.timer_backup();
     }
 }
