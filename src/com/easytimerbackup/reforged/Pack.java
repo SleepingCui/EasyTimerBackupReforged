@@ -1,4 +1,4 @@
-package main;
+package com.easytimerbackup.reforged;
 
 import java.io.*;
 import java.nio.file.Files;

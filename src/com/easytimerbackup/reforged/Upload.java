@@ -1,10 +1,7 @@
-package main;
+package com.easytimerbackup.reforged;
 
 import java.io.*;
 import java.net.*;
-
-
-import static main.config_read.get_config;
 
 public class Upload {
     private static void UploadBk(String ip, int port, File zipPath, boolean DelBackup) throws IOException {
@@ -56,11 +53,11 @@ public class Upload {
         }
     }
     public static void UploadBackup(File ZipPath) throws IOException {
-        String Enabled = get_config("uploadenabled");
+        String Enabled = config_read.get_config("uploadenabled");
         if (Enabled.equals("y")){
-            String ip = get_config("server_ip");
-            int port = Integer.valueOf(get_config("server_port"));
-            String delbackup = get_config("delbackup");
+            String ip = config_read.get_config("server_ip");
+            int port = Integer.valueOf(config_read.get_config("server_port"));
+            String delbackup = config_read.get_config("delbackup");
             System.out.println("INFO: Uploading...");
             if (delbackup.equals("y")){
                 UploadBk(ip,port,ZipPath,true);

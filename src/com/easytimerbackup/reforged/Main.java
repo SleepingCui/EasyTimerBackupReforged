@@ -1,4 +1,4 @@
-package main;
+package com.easytimerbackup.reforged;
 public class Main {
 
     public static void main(String[] args) {
