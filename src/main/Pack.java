@@ -5,13 +5,12 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.util.logging.Logger;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
 
 public class Pack {
-    static Logger logger = Logger.getLogger(Pack.class.getName());
+
     private static void CopyFiles(File source, File target) {
         if (source.isDirectory()) {
             if (!target.exists()) {
@@ -27,9 +26,9 @@ public class Pack {
         } else {
             try {
                 Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                logger.info("Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
+                System.out.println("INFO: Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             } catch (IOException e) {
-                logger.warning("Error copying: " + source.getAbsolutePath());
+                System.out.println("ERROR: copying: " + source.getAbsolutePath());
                 e.printStackTrace();
             }
         }
@@ -67,9 +66,9 @@ public class Pack {
 
             directory.delete();
 
-            logger.info(" All files and directories in " + path + " have been deleted.");
+            System.out.println("INFO: All files and directories in " + path + " have been deleted.");
         } else {
-            logger.warning(" The directory does not exist.");
+            System.out.println("ERROR: The directory does not exist.");
         }
     }
 
@@ -88,7 +87,7 @@ public class Pack {
     private static String getFileSize(String filename) {
         File file = new File(filename);
         if (!file.exists() || !file.isFile()) {
-            logger.warning("The file " + filename + " does not exist.");
+            System.out.println("ERROR: The file " + filename + " does not exist.");
             return "-1";
         }
         float sizeInBytes = file.length();
@@ -96,7 +95,7 @@ public class Pack {
         DecimalFormat df = new DecimalFormat("#.00");
         return df.format(sizeInGB) + " GB";
     }
-    private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws FileNotFoundException {
+    private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
         // Record the start time
         long startTime = System.nanoTime();
 
@@ -105,9 +104,10 @@ public class Pack {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String timestamp = LocalDateTime.now().format(formatter);
         String zipFilePath = ZipDirectory.toString() + "\\backup-" + timestamp + ".zip";
-        logger.info("ZipDirectory: " + zipFilePath);
-        logger.info("SourceDirectory: " + sourceDir);
-        logger.info("TempDirectory: " + TempDirectory);
+        System.out.println("INFO: Packing...");
+        System.out.println("INFO: ZipDirectory: " + zipFilePath);
+        System.out.println("INFO: SourceDirectory: " + sourceDir);
+        System.out.println("INFO: TempDirectory: " + TempDirectory);
 
         try (FileOutputStream fos = new FileOutputStream(zipFilePath)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
@@ -120,21 +120,23 @@ public class Pack {
         }
 
         removeTemp(TempDirectory.toString());
-        logger.info("Backup completed: " + zipFilePath);
+        System.out.println("INFO: Backup completed: " + zipFilePath);
 
         // Record the end time and calculate the elapsed time
         long endTime = System.nanoTime();
         double durationInSeconds = (endTime - startTime) / 1_000_000_000.0; // Convert nanoseconds to seconds
-        logger.info("Backup process completed in: " + durationInSeconds + " seconds");
-        logger.info("size of backup file: " + getFileSize(zipFilePath));
+        System.out.println("INFO: Backup process completed in: " + durationInSeconds + " seconds");
+        System.out.println("INFO: size of backup file: " + getFileSize(zipFilePath));
+        //Upload
+        Upload.UploadBackup(new File(zipFilePath));
+        System.out.println("====== ALL IS DONE ======\n");
     }
 
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {
-        try{
+        try {
             Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
-        }
-        catch (FileNotFoundException e){
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 

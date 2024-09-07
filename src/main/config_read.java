@@ -1,10 +1,9 @@
 package main;
 import java.io.*;
-import java.util.logging.Logger;
+
 import java.util.Map;
 import java.util.HashMap;
 public class config_read {
-    static Logger logger = Logger.getLogger(config_read.class.getName());
     @SuppressWarnings("CallToPrintStackTrace")
     private static String f_read_config(int lineToRead, String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -23,7 +22,7 @@ public class config_read {
     }
 
     public static String get_config(String target) {
-        config_write.IsFileEsixt();
+        config_write.isFileExists();
         String config_file_path = "config.cfg";
 
         // Mapping of targets to configuration line numbers
@@ -37,6 +36,7 @@ public class config_read {
         targetMap.put("uploadenabled",40);
         targetMap.put("server_ip",45);
         targetMap.put("server_port",48);
+        targetMap.put("delbackup",53);
 
         Integer lineNumber = targetMap.get(target);
 
@@ -49,7 +49,7 @@ public class config_read {
 
         // Check if readed_data is empty
         if (readed_data == null || readed_data.isEmpty()) {
-            logger.warning("The read data is empty!");
+            System.out.println("ERROR: The read data is empty!");
             System.exit(1); // Terminate the program
         }
 

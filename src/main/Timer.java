@@ -1,14 +1,14 @@
 package main;
 
-import java.io.FileNotFoundException;
+
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+
 
 public class Timer {
-    static Logger logger = Logger.getLogger(Timer.class.getName());
 
     public static void timer_backup() {
         String read_hour = config_read.get_config("time_hour");
@@ -18,8 +18,16 @@ public class Timer {
         String read_temp_path = config_read.get_config("temp_dir");
         String read_backup_path = config_read.get_config("backup_dir");
 
-        logger.info("Starting backup...");
-        logger.info("Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
+        System.out.println("INFO: Starting backup...");
+        System.out.println("INFO: Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
+        //Checkout Upload
+        String upload_enabled = config_read.get_config("uploadenabled");
+        if (upload_enabled.equals("y")) {
+            int port = Integer.parseInt(config_read.get_config("server_port"));
+            String ip = config_read.get_config("server_ip");
+            System.out.println("INFO: Upload mode was enabled!");
+            System.out.println("INFO: Server address: " + ip + ":"+port);
+        }
 
         // 创建一个调度执行器
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -41,10 +49,11 @@ public class Timer {
 
         // 安排任务
         scheduler.scheduleAtFixedRate(() -> {
-            logger.info("Backup Start!");
+            System.out.println("====== Backup Start! ======");
             try {
                 Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
-            } catch (FileNotFoundException e) {
+
+            } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }, initialDelay, period, TimeUnit.MILLISECONDS); // 确保使用毫秒作为单位

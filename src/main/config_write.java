@@ -1,86 +1,93 @@
 package main;
 
 import java.io.*;
-import java.util.logging.Logger;
 
 public class config_write {
-    static Logger logger = Logger.getLogger(config_write.class.getName());
-    private static void WritCfg(){
-        File config_file = new File("config.cfg");
+
+
+    private static void writeCfg() {
+        File configFile = new File("config.cfg");
         try {
-            config_file.createNewFile();
+            // 创建新文件
+            configFile.createNewFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        // Configuration file contents
+
+        // 配置文件内容
         String cfg = """  
-                EasyTimerBackup Config
-                v0.0.1
-                =================================================================
-                Do not change the number of lines in the configuration file!
-                Otherwise the read will fail!
-                不要更改配置文件的行数！否则会导致读取失败！
-                =================================================================
+                EasyTimerBackup Config  
+                v0.0.1  
+                =================================================================  
+                Do not change the number of lines in the configuration file!  
+                Otherwise the read will fail!  
+                =================================================================  
+                   
                                 
-                备份时间(时/分/秒)一个数值一行(17,18,19)
-                Backup time (hours/minutes/seconds) a value line.(17,18,19)
-                例如：
-                Example:
-                11     --时 Hours
-                45     --分 Minutes
-                14     --秒 Seconds
-                -------Config-------
+                
+                Backup time (hours/minutes/seconds) a value line.(17,18,19)  
+                  
+                Example:  
+                11      Hours  
+                45      Minutes  
+                14      Seconds  
+                -------Config-------  
                 
                 
                 
-                --------------------
+                --------------------  
                                 
-                目录设置(源目录/临时目录/备份目录)一个路径一行(32,33,34)
-                Directory settings (source path/temp path/backup path) one path and one line.(32,33,34)
-                ***注意：Windows系统要添加两个反斜杠(\\\\)Unix添加两个正斜杠(//)!
-                ***Note: Windows add two backslashes (\\\\) Unix add two forward slashes (//)!
-                例如:
-                Example:
-                C:\\\\SourceFolder\\\\  (//home//SourceFolder//)
-                C:\\\\BackupTemp\\\\    (//home//BackupTemp//)
-                C:\\\\BackupFolder\\\\  (//home//BackupFolder//)
-                -------Config-------
-                                
-                                
-                                
-                --------------------
+                
+                Directory settings (source path/temp path/backup path) one path and one line.(32,33,34)  
+                ***Note: Windows add two backslashes (\\\\) Unix add two forward slashes (//)!  
                  
-                打开/关闭文件上传功能(y/n) (40)            
-                Enable/disable file upload function(y/n) (40)
-                -------Config-------
+                Example:  
+                C:\\\\SourceFolder\\\\  (//home//SourceFolder//)  
+                C:\\\\BackupTemp\\\\    (//home//BackupTemp//)  
+                C:\\\\BackupFolder\\\\  (//home//BackupFolder//)  
+                
+                -------Config-------  
+                       
+                       
+                                
+                --------------------  
+                 
+                         
+                Enable/disable file upload function(y/n) (40)  
+                -------Config-------  
                                            
-                --------------------
-                服务器IP 端口号 (45,48)
-                Server IP Port
-                -------IP-------
+                --------------------  
+                
+                Server IP Port (45,48)
+                -------IP-------  
                                            
-                ----------------
-                ------Port------
+                ----------------  
+                ------Port------  
                                            
-                ----------------
+                ----------------  
+                
+                Enable/disable Delete Backup File after uploading(y/n) (53)
+                -------Config-------  
+                                           
+                -------------------- 
                 
                 """;
-        try {
-            PrintStream ps = new PrintStream(new FileOutputStream(config_file));
-            ps.println(cfg);
+
+        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(configFile), "utf-8"))) {
+            writer.println(cfg);
         } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-    public static void IsFileEsixt(){
-        File config_file = new File("config.cfg");if (!config_file.exists()){
 
-            logger.info("Generating configuration file...");
-            WritCfg();
+    public static void isFileExists() {
+        File configFile = new File("config.cfg");
+        if (!configFile.exists()) {
+                System.out.println("INFO: Generating configuration file...");
+            writeCfg();
             System.exit(0);
         }
-
-
     }
-
 }
