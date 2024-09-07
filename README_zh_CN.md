@@ -18,3 +18,7 @@
 ### 使用许可
 
 本程序采用 MIT 许可证。详情请查看 LICENSE 文件。
+
+### 文件上传服务器
+
+[Github](https://github.com/SleepingCui/EasiTimerBackupReforgedUploadServer)
