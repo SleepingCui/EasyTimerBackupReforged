@@ -84,17 +84,31 @@ public class Pack {
         file.delete();
     }
 
-    private static String getFileSize(String filename) {
+    public static String getFileSize(String filename) {
         File file = new File(filename);
         if (!file.exists() || !file.isFile()) {
             System.out.println("ERROR: The file " + filename + " does not exist.");
             return "-1";
         }
-        float sizeInBytes = file.length();
-        float sizeInGB = sizeInBytes / (1024 * 1024 * 1024);
+
+        long sizeInBytes = file.length();
+        if (sizeInBytes == 0) {
+            return "0 Bytes";
+        }
+
         DecimalFormat df = new DecimalFormat("#.00");
-        return df.format(sizeInGB) + " GB";
+        String[] units = {"Bytes", "KB", "MB", "GB", "TB"};
+        int unitIndex = 0;
+        double size = sizeInBytes;
+
+        while (size >= 1024 && unitIndex < units.length - 1) {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return df.format(size) + " " + units[unitIndex];
     }
+
     private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
         // Record the start time
         long startTime = System.nanoTime();

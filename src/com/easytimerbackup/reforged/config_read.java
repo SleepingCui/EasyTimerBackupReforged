@@ -1,8 +1,10 @@
 package com.easytimerbackup.reforged;
-import java.io.*;
-
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
+
 public class config_read {
     @SuppressWarnings("CallToPrintStackTrace")
     private static String f_read_config(int lineToRead, String path) {
