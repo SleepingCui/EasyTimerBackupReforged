@@ -20,6 +20,12 @@ public class Timer {
 
         System.out.println("INFO: Starting backup...");
         System.out.println("INFO: Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
+        System.out.println("INFO: SourceDirectory: " + read_source_path);
+        System.out.println("INFO: TempDirectory: " + read_temp_path);
+        System.out.println("INFO: ZipDirectory: " + read_backup_path);
+
+
+
         //Checkout Upload
         String upload_enabled = config_read.get_config("uploadenabled");
         if (upload_enabled.equals("y")) {

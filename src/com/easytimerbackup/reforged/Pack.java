@@ -25,6 +25,7 @@ public class Pack {
             }
         } else {
             try {
+                
                 Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
                 System.out.println("INFO: Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             } catch (IOException e) {
@@ -36,6 +37,12 @@ public class Pack {
 
     private static void zipDirectory(String sourceDir, String baseDir, ZipOutputStream zos) throws IOException {
         File dir = new File(sourceDir);
+        File[] files = dir.listFiles();
+        if (files == null) return; // 确保文件列表不为空
+
+        int totalFiles = countFiles(files); // 计算总文件数量
+        int processedFiles = 0; // 已处理的文件数量
+
         for (String fileName : dir.list()) {
             File file = new File(sourceDir + File.separator + fileName);
             if (file.isDirectory()) {
@@ -51,8 +58,26 @@ public class Pack {
                         zos.write(buffer, 0, length);
                     }
                 }
+
+                processedFiles++; // 更新已处理的文件数量
+                int progressPercentage = (int) ((processedFiles * 100) / totalFiles);
+                System.out.printf("\rINFO: %d%% %d / %d Files", progressPercentage, processedFiles, totalFiles);
             }
         }
+        System.out.println(); // 换行以清晰显示最后的进度信息
+    }
+
+    // 计算文件数量的辅助方法
+    private static int countFiles(File[] files) {
+        int count = 0;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                count += countFiles(file.listFiles()); // 递归计算子目录中的文件
+            } else {
+                count++;
+            }
+        }
+        return count;
     }
     private static void removeTemp(String path) {
         File directory = new File(path);
@@ -119,9 +144,6 @@ public class Pack {
         String timestamp = LocalDateTime.now().format(formatter);
         String zipFilePath = ZipDirectory.toString() + "\\backup-" + timestamp + ".zip";
         System.out.println("INFO: Packing...");
-        System.out.println("INFO: ZipDirectory: " + zipFilePath);
-        System.out.println("INFO: SourceDirectory: " + sourceDir);
-        System.out.println("INFO: TempDirectory: " + TempDirectory);
 
         try (FileOutputStream fos = new FileOutputStream(zipFilePath)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
