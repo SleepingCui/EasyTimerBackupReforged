@@ -39,12 +39,12 @@ public class config_write {
                                 
                 
                 Directory settings (source path/temp path/backup path) one path and one line.(32,33,34)  
-                ***Note: Windows add two backslashes (\\\\) Unix add two forward slashes (//)!  
+                 
                  
                 Example:  
-                C:\\\\SourceFolder\\\\  (//home//SourceFolder//)  
-                C:\\\\BackupTemp\\\\    (//home//BackupTemp//)  
-                C:\\\\BackupFolder\\\\  (//home//BackupFolder//)  
+                C:\\SourceFolder\\  (/home/SourceFolder/)  
+                C:\\BackupTemp\\    (/home/BackupTemp/)  
+                C:\\BackupFolder\\  (/home/BackupFolder/)  
                 
                 -------Config-------  
                        
