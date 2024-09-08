@@ -32,3 +32,4 @@ bin/
 ### Project ###
 config.cfg
 *.zip
+/logs/

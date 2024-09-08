@@ -1,6 +1,9 @@
 package com.easytimerbackup.reforged;
 
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
@@ -9,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Timer {
-
+    private static final Logger LOGGER = LogManager.getLogger(Timer.class);
     public static void timer_backup() {
         String read_hour = config_read.get_config("time_hour");
         String read_minute = config_read.get_config("time_minute");
@@ -18,11 +21,11 @@ public class Timer {
         String read_temp_path = config_read.get_config("temp_dir");
         String read_backup_path = config_read.get_config("backup_dir");
 
-        System.out.println("INFO: Starting backup...");
-        System.out.println("INFO: Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
-        System.out.println("INFO: SourceDirectory: " + read_source_path);
-        System.out.println("INFO: TempDirectory: " + read_temp_path);
-        System.out.println("INFO: ZipDirectory: " + read_backup_path);
+        LOGGER.info("Starting backup...");
+        LOGGER.info("Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
+        LOGGER.info("SourceDirectory: " + read_source_path);
+        LOGGER.info("TempDirectory: " + read_temp_path);
+        LOGGER.info("ZipDirectory: " + read_backup_path);
 
 
 
@@ -31,8 +34,11 @@ public class Timer {
         if (upload_enabled.equals("y")) {
             int port = Integer.parseInt(config_read.get_config("server_port"));
             String ip = config_read.get_config("server_ip");
-            System.out.println("INFO: Upload mode was enabled!");
-            System.out.println("INFO: Server address: " + ip + ":"+port);
+            LOGGER.info("Upload mode was enabled!");
+            LOGGER.info("Server address: " + ip + ":"+port);
+        }
+        else {
+            LOGGER.info("Upload mode was disabled!");
         }
 
         // 创建一个调度执行器
@@ -55,7 +61,7 @@ public class Timer {
 
         // 安排任务
         scheduler.scheduleAtFixedRate(() -> {
-            System.out.println("====== Backup Start! ======");
+            LOGGER.info("====== Backup Start! ======");
             try {
                 Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
 

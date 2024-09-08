@@ -1,5 +1,8 @@
 package com.easytimerbackup.reforged;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -10,8 +13,9 @@ import java.time.format.DateTimeFormatter;
 import java.text.DecimalFormat;
 
 public class Pack {
-
+    private static final Logger LOGGER = LogManager.getLogger(Pack.class);
     private static void CopyFiles(File source, File target) {
+
         if (source.isDirectory()) {
             if (!target.exists()) {
                 target.mkdirs();
@@ -27,9 +31,9 @@ public class Pack {
             try {
                 
                 Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                System.out.println("INFO: Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
+                LOGGER.info("Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
             } catch (IOException e) {
-                System.out.println("ERROR: copying: " + source.getAbsolutePath());
+                LOGGER.error("copying: " + source.getAbsolutePath());
                 e.printStackTrace();
             }
         }
@@ -61,7 +65,7 @@ public class Pack {
 
                 processedFiles++; // 更新已处理的文件数量
                 int progressPercentage = (int) ((processedFiles * 100) / totalFiles);
-                System.out.printf("\rINFO: %d%% %d / %d Files", progressPercentage, processedFiles, totalFiles);
+                System.out.printf("\r%d%% %d / %d Files", progressPercentage, processedFiles, totalFiles);
             }
         }
         System.out.println(); // 换行以清晰显示最后的进度信息
@@ -91,9 +95,9 @@ public class Pack {
 
             directory.delete();
 
-            System.out.println("INFO: All files and directories in " + path + " have been deleted.");
+            LOGGER.info("All files and directories in " + path + " have been deleted.");
         } else {
-            System.out.println("ERROR: The directory does not exist.");
+            LOGGER.error("The directory does not exist.");
         }
     }
 
@@ -109,10 +113,10 @@ public class Pack {
         file.delete();
     }
 
-    public static String getFileSize(String filename) {
+    private static String getFileSize(String filename) {
         File file = new File(filename);
         if (!file.exists() || !file.isFile()) {
-            System.out.println("ERROR: The file " + filename + " does not exist.");
+            LOGGER.error("The file " + filename + " does not exist.");
             return "-1";
         }
 
@@ -143,7 +147,7 @@ public class Pack {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
         String timestamp = LocalDateTime.now().format(formatter);
         String zipFilePath = ZipDirectory.toString() + "\\backup-" + timestamp + ".zip";
-        System.out.println("INFO: Packing...");
+        LOGGER.info("Now Packing...");
 
         try (FileOutputStream fos = new FileOutputStream(zipFilePath)) {
             try (ZipOutputStream zos = new ZipOutputStream(fos)) {
@@ -156,16 +160,16 @@ public class Pack {
         }
 
         removeTemp(TempDirectory.toString());
-        System.out.println("INFO: Backup completed: " + zipFilePath);
+        LOGGER.info("Backup completed: " + zipFilePath);
 
         // Record the end time and calculate the elapsed time
         long endTime = System.nanoTime();
         double durationInSeconds = (endTime - startTime) / 1_000_000_000.0; // Convert nanoseconds to seconds
-        System.out.println("INFO: Backup process completed in: " + durationInSeconds + " seconds");
-        System.out.println("INFO: size of backup file: " + getFileSize(zipFilePath));
+        LOGGER.info("Backup process completed in: " + durationInSeconds + " seconds");
+        LOGGER.info("size of backup file: " + getFileSize(zipFilePath));
         //Upload
         Upload.UploadBackup(new File(zipFilePath));
-        System.out.println("====== ALL IS DONE ======\n");
+        LOGGER.info("====== ALL IS DONE ======\n");
     }
 
     public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {

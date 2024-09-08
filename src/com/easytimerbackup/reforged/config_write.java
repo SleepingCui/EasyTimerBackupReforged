@@ -1,9 +1,12 @@
 package com.easytimerbackup.reforged;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.*;
 
 public class config_write {
-
+    private static final Logger LOGGER = LogManager.getLogger(config_write.class);
 
     private static void writeCfg() {
         File configFile = new File("config.cfg");
@@ -85,7 +88,7 @@ public class config_write {
     public static void isFileExists() {
         File configFile = new File("config.cfg");
         if (!configFile.exists()) {
-                System.out.println("INFO: Generating configuration file...");
+                LOGGER.info("Generating configuration file...");
             writeCfg();
             System.exit(0);
         }

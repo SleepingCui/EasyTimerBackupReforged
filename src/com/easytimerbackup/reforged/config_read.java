@@ -1,11 +1,15 @@
 package com.easytimerbackup.reforged;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.HashMap;
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
 
 public class config_read {
+    private static final Logger LOGGER = LogManager.getLogger(config_read.class);
     @SuppressWarnings("CallToPrintStackTrace")
     private static String f_read_config(int lineToRead, String path) {
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
@@ -51,7 +55,7 @@ public class config_read {
 
         // Check if readed_data is empty
         if (readed_data == null || readed_data.isEmpty()) {
-            System.out.println("ERROR: The read data is empty!");
+            LOGGER.error("The read data is empty!");
             System.exit(1); // Terminate the program
         }
 

@@ -1,8 +1,13 @@
 package com.easytimerbackup.reforged;
-public class Main {
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
+public class Main {
+    public static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static void main(String[] args) {
-        System.out.println("====== Loading EasyTimerBackupReforged ... ======\n");
+        Loginit.initLog();
+        LOGGER.info("====== Loading EasyTimerBackupReforged ... ======");
         Timer.timer_backup();
     }
 }

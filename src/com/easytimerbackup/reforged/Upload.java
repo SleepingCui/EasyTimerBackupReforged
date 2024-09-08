@@ -2,8 +2,10 @@ package com.easytimerbackup.reforged;
 
 import java.io.*;
 import java.net.*;
-
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
 public class Upload {
+    private static final Logger LOGGER = LogManager.getLogger(Upload.class);
     private static void UploadBk(String ip, int port, File zipPath, boolean DelBackup) {
         Socket socket = new Socket();
         try {
@@ -32,7 +34,7 @@ public class Upload {
                             progressPercentage,
                             uploadedSize / (1024 * 1024),
                             totalSize / (1024 * 1024));
-                    System.out.print("\rINFO: " + progressMessage);
+                    System.out.print("\r" + progressMessage);
                 }
 
                 dos.flush(); // 确保所有数据都被发送
@@ -43,13 +45,14 @@ public class Upload {
                 byte[] bufMsg = new byte[1024];
                 int num = in.read(bufMsg);
                 String msg = new String(bufMsg, 0, num);
-                System.out.println("\n"+msg);
+                System.out.println(); //换行
+                LOGGER.info(msg);
             }
         } catch (SocketTimeoutException e) {
-            System.err.println("ERROR: Socket timed out");
+            LOGGER.error("Socket timed out");
             e.printStackTrace(); // 输出堆栈跟踪
         } catch (IOException e) {
-            System.err.println("ERROR: I/O exception");
+            LOGGER.error("I/O exception");
             e.printStackTrace(); // 输出堆栈跟踪
         } finally {
             try {
@@ -73,7 +76,7 @@ public class Upload {
             String ip = config_read.get_config("server_ip");
             int port = Integer.valueOf(config_read.get_config("server_port"));
             String delbackup = config_read.get_config("delbackup");
-            System.out.println("INFO: Uploading...");
+            LOGGER.info("Uploading...");
             if (delbackup.equals("y")){
                 UploadBk(ip,port,ZipPath,true);
             }
@@ -84,7 +87,7 @@ public class Upload {
 
         }
         else {
-            System.out.println("WARN: Upload is not enabled");
+            LOGGER.warn("Upload is not enabled");
         }
     }
 
