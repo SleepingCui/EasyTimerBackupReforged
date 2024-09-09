@@ -1,12 +1,13 @@
 package com.easytimerbackup.reforged;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
 import java.util.HashMap;
-import org.apache.log4j.Logger;
-import org.apache.log4j.LogManager;
+import java.util.Map;
 
 public class config_read {
     private static final Logger LOGGER = LogManager.getLogger(config_read.class);

@@ -3,7 +3,8 @@ package com.easytimerbackup.reforged;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-
+import com.diogonunes.jcolor.Attribute;
+import static com.diogonunes.jcolor.Ansi.colorize;
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
@@ -20,9 +21,10 @@ public class Timer {
         String read_source_path = config_read.get_config("source_dir");
         String read_temp_path = config_read.get_config("temp_dir");
         String read_backup_path = config_read.get_config("backup_dir");
+        String colored_time = colorize(read_hour + ":" + read_minute + ":" + read_second, Attribute.CYAN_TEXT());
 
         LOGGER.info("Starting backup...");
-        LOGGER.info("Backup Time: " + read_hour + ":" + read_minute + ":" + read_second);
+        LOGGER.info("Backup Time: " + colored_time);
         LOGGER.info("SourceDirectory: " + read_source_path);
         LOGGER.info("TempDirectory: " + read_temp_path);
         LOGGER.info("ZipDirectory: " + read_backup_path);

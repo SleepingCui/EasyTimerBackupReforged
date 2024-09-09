@@ -1,4 +1,5 @@
 package com.easytimerbackup.reforged;
+
 import org.apache.log4j.PropertyConfigurator;
 
 import java.io.FileInputStream;
