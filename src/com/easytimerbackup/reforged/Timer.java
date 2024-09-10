@@ -1,15 +1,17 @@
 package com.easytimerbackup.reforged;
 
 
+import com.diogonunes.jcolor.Attribute;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import com.diogonunes.jcolor.Attribute;
-import static com.diogonunes.jcolor.Ansi.colorize;
+
 import java.io.IOException;
 import java.util.Calendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+
+import static com.diogonunes.jcolor.Ansi.colorize;
 
 
 public class Timer {

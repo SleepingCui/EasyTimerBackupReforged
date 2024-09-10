@@ -56,7 +56,7 @@ public class config_read {
 
         // Check if readed_data is empty
         if (readed_data == null || readed_data.isEmpty()) {
-            LOGGER.error("The read data is empty!");
+            LOGGER.error(" The read data is empty!");
             System.exit(1); // Terminate the program
         }
 

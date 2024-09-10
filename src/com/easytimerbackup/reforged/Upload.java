@@ -7,8 +7,11 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
+
 public class Upload {
     private static final Logger LOGGER = LogManager.getLogger(Upload.class);
+
+    // 上传文件方法
     private static void UploadBk(String ip, int port, File zipPath, boolean DelBackup) {
         Socket socket = new Socket();
         try {
@@ -26,18 +29,28 @@ public class Upload {
                 byte[] buffer = new byte[1024];
                 int length;
 
+                // 进度条参数
+                int barLength = 50; // 进度条长度
+
                 // 发送文件数据
                 while ((length = fis.read(buffer)) != -1) {
                     dos.write(buffer, 0, length);
                     uploadedSize += length; // 更新已上传的字节数
 
-                    // 计算并显示进度
+                    // 计算上传进度
                     int progressPercentage = (int) ((uploadedSize * 100) / totalSize);
-                    String progressMessage = String.format("%d%% %dMB/%dMB",
+                    int progressBars = (int) ((double) progressPercentage / 100 * barLength); // 进度条长度比例
+                    String progressBar = "[" + "=".repeat(progressBars) + " ".repeat(barLength - progressBars) + "]";
+
+                    // 格式化进度信息
+                    String progressMessage = String.format("\r%s %d%% | Uploaded: %dMB / %dMB",
+                            progressBar,
                             progressPercentage,
                             uploadedSize / (1024 * 1024),
                             totalSize / (1024 * 1024));
-                    System.out.print("\r" + progressMessage);
+
+                    // 显示进度条
+                    System.out.print(progressMessage);
                 }
 
                 dos.flush(); // 确保所有数据都被发送
@@ -48,7 +61,7 @@ public class Upload {
                 byte[] bufMsg = new byte[1024];
                 int num = in.read(bufMsg);
                 String msg = new String(bufMsg, 0, num);
-                System.out.println(); //换行
+                System.out.println(); // 换行
                 LOGGER.info(msg);
             }
         } catch (SocketTimeoutException e) {
@@ -61,10 +74,9 @@ public class Upload {
             try {
                 socket.close(); // 确保 socket 被关闭
             } catch (IOException e) {
-
                 e.printStackTrace(); // 输出堆栈跟踪
             }
-            if (DelBackup) {  // DeleteBackupFile
+            if (DelBackup) {  // 删除备份文件
                 try {
                     zipPath.delete();
                 } catch (Exception e) {
@@ -73,25 +85,21 @@ public class Upload {
             }
         }
     }
+
     public static void UploadBackup(File ZipPath) throws IOException {
         String Enabled = config_read.get_config("uploadenabled");
-        if (Enabled.equals("y")){
+        if (Enabled.equals("y")) {
             String ip = config_read.get_config("server_ip");
-            int port = Integer.valueOf(config_read.get_config("server_port"));
+            int port = Integer.parseInt(config_read.get_config("server_port"));
             String delbackup = config_read.get_config("delbackup");
             LOGGER.info("Uploading...");
-            if (delbackup.equals("y")){
-                UploadBk(ip,port,ZipPath,true);
+            if (delbackup.equals("y")) {
+                UploadBk(ip, port, ZipPath, true);
+            } else {
+                UploadBk(ip, port, ZipPath, false);
             }
-            else{
-                UploadBk(ip,port,ZipPath,false);
-            }
-
-
-        }
-        else {
+        } else {
             LOGGER.warn("Upload is not enabled");
         }
     }
-
 }
