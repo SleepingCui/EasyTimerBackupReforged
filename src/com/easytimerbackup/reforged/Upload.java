@@ -66,15 +66,15 @@ public class Upload {
             }
         } catch (SocketTimeoutException e) {
             LOGGER.error("Socket timed out");
-            e.printStackTrace(); // 输出堆栈跟踪
+            LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
         } catch (IOException e) {
             LOGGER.error("I/O exception");
-            e.printStackTrace(); // 输出堆栈跟踪
+            LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
         } finally {
             try {
                 socket.close(); // 确保 socket 被关闭
             } catch (IOException e) {
-                e.printStackTrace(); // 输出堆栈跟踪
+                LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
             }
             if (DelBackup) {  // 删除备份文件
                 try {

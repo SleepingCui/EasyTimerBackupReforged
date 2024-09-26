@@ -4,6 +4,7 @@
     <root id="archive" name="EasyTimerBackupReforged.jar">
       <element id="module-output" name="EasyTimerBackupReforged" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/log4j-1.2.17.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/JColor-5.5.1.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>
