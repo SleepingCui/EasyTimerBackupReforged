@@ -3,6 +3,7 @@ package com.easytimerbackup.reforged;
 import com.diogonunes.jcolor.Attribute;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import static com.diogonunes.jcolor.Ansi.colorize;
 
 public class Pack {
     private static final Logger LOGGER = LogManager.getLogger(Pack.class);
-    private static void CopyFiles(File source, File target) throws IOException {
+    private static void CopyFiles(@NotNull File source, File target) throws IOException {
         ExecutorService executor = Executors.newFixedThreadPool(4); // 创建 4 个线程池
 
         if (source.isDirectory()) {
@@ -72,7 +73,7 @@ public class Pack {
     private static int processedFolders = 0;
 
     // 递归统计文件和文件夹数量
-    private static void countFilesAndFolders(File dir) {
+    private static void countFilesAndFolders(@NotNull File dir) {
         File[] files = dir.listFiles();
         if (files == null) return;
 
@@ -152,7 +153,7 @@ public class Pack {
         }
     }
 
-    private static void delete(File file) {
+    private static void delete(@NotNull File file) {
         if (file.isDirectory()) {
             File[] files = file.listFiles();
 
@@ -164,7 +165,7 @@ public class Pack {
         file.delete();
     }
 
-    private static String getFileSize(String filename) {
+    private static @NotNull String getFileSize(String filename) {
         File file = new File(filename);
         if (!file.exists() || !file.isFile()) {
             LOGGER.error("The file " + filename + " does not exist.");
@@ -189,7 +190,7 @@ public class Pack {
         return df.format(size) + " " + units[unitIndex];
     }
 
-    private static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
+    private static void Pack(File SourceDirectory, File TempDirectory, @NotNull File ZipDirectory) throws IOException {
         // 记录开始时间
         long startTime = System.nanoTime();
 

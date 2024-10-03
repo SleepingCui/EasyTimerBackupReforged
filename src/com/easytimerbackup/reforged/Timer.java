@@ -12,14 +12,34 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import static com.diogonunes.jcolor.Ansi.colorize;
+import static java.lang.System.exit;
 
 
 public class Timer {
     private static final Logger LOGGER = LogManager.getLogger(Timer.class);
+
     public static void timer_backup() {
+        // 从配置中读取时间
         String read_hour = config_read.get_config("time_hour");
         String read_minute = config_read.get_config("time_minute");
         String read_second = config_read.get_config("time_second");
+
+        // 验证时间是否合法
+        int hour=0, minute=0, second=0;
+        try {
+            hour = Integer.parseInt(read_hour);
+            minute = Integer.parseInt(read_minute);
+            second = Integer.parseInt(read_second);
+
+            if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
+                throw new IllegalArgumentException("Invalid time provided!");
+            }
+        } catch (IllegalArgumentException e) {
+            LOGGER.error(" Invalid time configuration: " + e.getMessage());
+            exit(1);
+            //throw new RuntimeException("Invalid time configuration: " + e.getMessage());
+        }
+
         String read_source_path = config_read.get_config("source_dir");
         String read_temp_path = config_read.get_config("temp_dir");
         String read_backup_path = config_read.get_config("backup_dir");
@@ -31,17 +51,14 @@ public class Timer {
         LOGGER.info("TempDirectory: " + read_temp_path);
         LOGGER.info("ZipDirectory: " + read_backup_path);
 
-
-
-        //Checkout Upload
+        // 检查上传是否启用
         String upload_enabled = config_read.get_config("uploadenabled");
         if (upload_enabled.equals("y")) {
             int port = Integer.parseInt(config_read.get_config("server_port"));
             String ip = config_read.get_config("server_ip");
             LOGGER.info("Upload mode was enabled!");
-            LOGGER.info("Server address: " + ip + ":"+port);
-        }
-        else {
+            LOGGER.info("Server address: " + ip + ":" + port);
+        } else {
             LOGGER.info("Upload mode was disabled!");
         }
 
@@ -51,9 +68,9 @@ public class Timer {
         // 获取当前时间
         Calendar now = Calendar.getInstance();
         Calendar nextBackup = Calendar.getInstance();
-        nextBackup.set(Calendar.HOUR_OF_DAY, Integer.parseInt(read_hour));
-        nextBackup.set(Calendar.MINUTE, Integer.parseInt(read_minute));
-        nextBackup.set(Calendar.SECOND, Integer.parseInt(read_second));
+        nextBackup.set(Calendar.HOUR_OF_DAY, hour);
+        nextBackup.set(Calendar.MINUTE, minute);
+        nextBackup.set(Calendar.SECOND, second);
 
         // 如果设定的时间已经过去，则设置为明天的同一时间
         if (nextBackup.getTimeInMillis() < now.getTimeInMillis()) {
@@ -68,13 +85,10 @@ public class Timer {
             LOGGER.info("====== Backup Start! ======");
             try {
                 Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
-
             } catch (IOException e) {
+                LOGGER.error("Backup failed: " + e.getMessage());
                 throw new RuntimeException(e);
             }
         }, initialDelay, period, TimeUnit.MILLISECONDS); // 确保使用毫秒作为单位
-
-
-
     }
 }
