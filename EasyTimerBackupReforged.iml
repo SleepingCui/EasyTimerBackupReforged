@@ -38,5 +38,15 @@
     </orderEntry>
     <orderEntry type="library" name="log4j-1.2.17" level="project" />
     <orderEntry type="library" name="JColor-5.5.1" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/annotations-24.0.0.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="commons-compress-1.27.1" level="project" />
   </component>
 </module>

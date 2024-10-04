@@ -1,32 +1,54 @@
 package com.easytimerbackup.reforged;
 
-import com.diogonunes.jcolor.Attribute;
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.FileNotFoundException;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.BufferedInputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import static com.diogonunes.jcolor.Ansi.colorize;
-
 
 public class Pack {
     private static final Logger LOGGER = LogManager.getLogger(Pack.class);
+    private static int totalFiles = 0; // 文件总数
+    private static int processedFiles = 0; // 已处理文件数
+
+    // 递归统计文件总数
+    private static void countTotalFiles(File dir) {
+        for (File file : dir.listFiles()) {
+            if (file.isDirectory()) {
+                countTotalFiles(file);
+            } else {
+                totalFiles++;
+            }
+        }
+    }
+
+    // 显示进度条
+    private static void showProgress() {
+        int progressPercentage = (int) ((double) processedFiles / totalFiles * 100);
+        int progressBars = (progressPercentage / 5); // 每5%一个进度条
+        StringBuilder progressBar = new StringBuilder("[");
+        for (int i = 0; i < 20; i++) {
+            if (i < progressBars) {
+                progressBar.append("=");
+            } else {
+                progressBar.append(" ");
+            }
+        }
+        progressBar.append("]");
+        System.out.print(String.format("\r%d%% %d/%d Files %s", progressPercentage, processedFiles, totalFiles, progressBar));
+    }
+
+    // 复制文件和文件夹
     private static void CopyFiles(@NotNull File source, File target) throws IOException {
         ExecutorService executor = Executors.newFixedThreadPool(4); // 创建 4 个线程池
 
@@ -53,150 +75,58 @@ public class Pack {
                     }
                 });
             }
+
+            executor.shutdown();
+            try {
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
         } else {
             Files.copy(source.toPath(), target.toPath(), StandardCopyOption.REPLACE_EXISTING);
             LOGGER.info("Copied: " + source.getAbsolutePath() + " to " + target.getAbsolutePath());
         }
-
-        // 等待所有任务完成
-        executor.shutdown();
-        try {
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
 
-    private static int totalFiles = 0;
-    private static int totalFolders = 0;
-    private static int processedFiles = 0;
-    private static int processedFolders = 0;
-
-    // 递归统计文件和文件夹数量
-    private static void countFilesAndFolders(@NotNull File dir) {
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
-            if (file.isDirectory()) {
-                totalFolders++;
-                countFilesAndFolders(file); // 递归统计子文件夹
-            } else {
-                totalFiles++;
-            }
-        }
-    }
-
-    // 压缩目录并显示进度
-    private static void zipDirectory(String sourceDir, String baseDir, ZipOutputStream zos) throws IOException {
+    // 使用 Apache Commons Compress 压缩文件
+    private static void zipDirectory(String rootDir, String sourceDir, ZipArchiveOutputStream zos) throws IOException {
         File dir = new File(sourceDir);
-        File[] files = dir.listFiles();
-        if (files == null) return;
-
-        for (File file : files) {
+        for (File file : dir.listFiles()) {
+            String entryName = file.getAbsolutePath().substring(rootDir.length() + 1);
             if (file.isDirectory()) {
-                processedFolders++; // 记录已处理的文件夹数量
-                zipDirectory(file.getPath(), baseDir, zos); // 递归处理子文件夹
+                zipDirectory(rootDir, file.getAbsolutePath(), zos);  // 递归处理子目录
             } else {
-                try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(file))) {
-                    // 计算 zipEntry 的名称
-                    String zipEntryName = file.getPath().substring(baseDir.length() + 1);
-                    ZipEntry zipEntry = new ZipEntry(zipEntryName);
-                    zos.putNextEntry(zipEntry);
+                // 确保这里使用的是具体的 ZipArchiveEntry
+                ZipArchiveEntry entry = new ZipArchiveEntry(file, entryName);
+                zos.putArchiveEntry(entry);
 
-                    // 使用缓冲区写入文件
+                try (FileInputStream fis = new FileInputStream(file)) {
                     byte[] buffer = new byte[1024];
-                    int len;
-                    while ((len = bis.read(buffer)) != -1) { // 修复读取时的判断
-                        zos.write(buffer, 0, len);
+                    int length;
+                    while ((length = fis.read(buffer)) > 0) {
+                        zos.write(buffer, 0, length);  // 写入压缩文件
                     }
-
-                    zos.closeEntry();
-                    processedFiles++; // 记录已处理的文件数量
-
-                    // 计算综合进度
-                    int totalProcessed = processedFiles + processedFolders;
-                    int totalItems = totalFiles + totalFolders;
-                    double overallProgress = (double) totalProcessed / totalItems * 100;
-
-                    // 显示进度条
-                    int barLength = 50; // 进度条的长度
-                    int progressBars = (int) (overallProgress / 100 * barLength);
-                    String progressBar = "[" + "=".repeat(progressBars) + " ".repeat(barLength - progressBars) + "]";
-
-                    // 显示进度信息，并覆盖上次输出
-                    System.out.printf("\r%s %.2f%% | Files: %d/%d | Folders: %d/%d",
-                            progressBar, overallProgress, processedFiles, totalFiles, processedFolders, totalFolders);
                 }
+
+                zos.closeArchiveEntry();  // 关闭当前条目
+                processedFiles++;  // 更新已处理的文件数
+                showProgress();  // 更新进度条
             }
         }
     }
 
 
-
-
-    private static void removeTemp(String path) {
-        File directory = new File(path);
-
-        if (directory.exists()) {
-            File[] files = directory.listFiles();
-
-            for (File file : files) {
-                delete(file);
-            }
-
-            directory.delete();
-
-            LOGGER.info("All files and directories in " + path + " have been deleted.");
-        } else {
-            LOGGER.error("The directory does not exist.");
-        }
-    }
-
-    private static void delete(@NotNull File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-
-            for (File f : files) {
-                delete(f);
-            }
-        }
-
-        file.delete();
-    }
-
-    private static @NotNull String getFileSize(String filename) {
-        File file = new File(filename);
-        if (!file.exists() || !file.isFile()) {
-            LOGGER.error("The file " + filename + " does not exist.");
-            return "-1";
-        }
-
-        long sizeInBytes = file.length();
-        if (sizeInBytes == 0) {
-            return "0 Bytes";
-        }
-
-        DecimalFormat df = new DecimalFormat("#.00");
-        String[] units = {"Bytes", "KB", "MB", "GB", "TB"};
-        int unitIndex = 0;
-        double size = sizeInBytes;
-
-        while (size >= 1024 && unitIndex < units.length - 1) {
-            size /= 1024;
-            unitIndex++;
-        }
-
-        return df.format(size) + " " + units[unitIndex];
-    }
-
-    private static void Pack(File SourceDirectory, File TempDirectory, @NotNull File ZipDirectory) throws IOException {
-        // 记录开始时间
+    public static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
         long startTime = System.nanoTime();
 
-        // 复制文件到临时目录
+        // 复制源文件到临时目录
         CopyFiles(SourceDirectory, TempDirectory);
         String sourceDir = TempDirectory.toString();
+
+        // 获取文件总数
+        totalFiles = 0;
+        processedFiles = 0;
+        countTotalFiles(TempDirectory);
 
         // 获取当前时间戳用于命名 zip 文件
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
@@ -205,44 +135,32 @@ public class Pack {
 
         LOGGER.info("Now Packing...");
 
-        // 统计源目录中的总文件和文件夹数量，用于显示进度
-        totalFiles = 0;
-        totalFolders = 0;
-        processedFiles = 0;
-        processedFolders = 0;
-        countFilesAndFolders(TempDirectory);  // 统计文件和文件夹数量
-
-        // 压缩临时目录内容到 zip 文件，并显示进度
+        // 压缩临时目录内容到 zip 文件
         try (FileOutputStream fos = new FileOutputStream(zipFilePath);
-             ZipOutputStream zos = new ZipOutputStream(fos)) {
-            zipDirectory(sourceDir, sourceDir, zos);  // 压缩目录，显示进度
+             ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
+            zipDirectory(sourceDir, sourceDir, zos);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println();
-        // 移除临时目录
-        removeTemp(TempDirectory.toString());
+
+        System.out.println(); // 压缩完成，换行
         LOGGER.info("Backup completed: " + zipFilePath);
 
         // 记录结束时间并计算耗时
         long endTime = System.nanoTime();
-        double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;  // 转换为秒
-        LOGGER.info("Backup process completed in: " + colorize(Double.toString(durationInSeconds), Attribute.BRIGHT_YELLOW_TEXT()) + " seconds");
+        double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
+        LOGGER.info("Backup process completed in: " + durationInSeconds + " seconds");
 
-        // 显示压缩文件的大小
-        LOGGER.info("Size of backup file: " + getFileSize(zipFilePath));
-
-        // 上传备份文件
-        Upload.UploadBackup(new File(zipFilePath));
-        LOGGER.info(colorize("======== ALL IS DONE ========",Attribute.GREEN_TEXT()));
+        //上传
+        LOGGER.debug(zipFilePath);
+        //Upload.UploadBackup(new File(zipFilePath));
     }
 
-    public static void PackBackup(String sourceDir,String TempDirectory,String ZipDirectory) throws FileNotFoundException {
+    public static void PackBackup(String sourceDir, String TempDirectory, String ZipDirectory) throws FileNotFoundException {
         try {
             Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
-
 }
