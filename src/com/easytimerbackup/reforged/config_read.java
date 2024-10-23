@@ -44,6 +44,10 @@ public class config_read {
         targetMap.put("server_ip", 45);
         targetMap.put("server_port", 48);
         targetMap.put("delbackup", 53);
+        targetMap.put("server",59);
+        targetMap.put("server_ip",64);
+        targetMap.put("server_port",67);
+        targetMap.put("rev_path",72);
 
         Integer lineNumber = targetMap.get(target);
 
@@ -52,12 +56,13 @@ public class config_read {
         }
 
         // Read uploadenabled first
-        if (target.equals("uploadenabled")) {
+        if (target.equals("uploadenabled") || target.equals("server")) {
             return f_read_config(lineNumber, config_file_path);
-        } else if (target.equals("server_ip") || target.equals("server_port") || target.equals("delbackup")) {
+        } else if (target.equals("server_ip") || target.equals("server_port") || target.equals("delbackup") || target.equals("server_ip") || target.equals("server_port") || target.equals("rev_path")){
             // Check
             String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
-            if ("n".equals(uploadEnabledValue)) {
+            String UploadServerValue = f_read_config(targetMap.get("server"), config_file_path);
+            if ("n".equals(uploadEnabledValue) || "n".equals(UploadServerValue)) {
                 return "0";
             }
 

@@ -74,6 +74,24 @@ public class config_write {
                                            
                 -------------------- 
                 
+                
+                Enable/disable upload server(y/n) (59)
+                -------Config-------  
+                                           
+                -------------------- 
+                
+                Server IP Port (64,67)
+                -------IP-------  
+                                           
+                ----------------  
+                ------Port------  
+                                           
+                ----------------  
+                
+                Receive path (72)
+                -------Config-------  
+
+                --------------------  
                 """;
 
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(configFile), "utf-8"))) {
@@ -84,7 +102,7 @@ public class config_write {
             throw new RuntimeException(e);
         }
     }
-
+ 
     public static void isFileExists() {
         File configFile = new File("config.cfg");
         if (!configFile.exists()) {

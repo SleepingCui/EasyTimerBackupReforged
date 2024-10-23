@@ -1,6 +1,6 @@
 package com.easytimerbackup.reforged;
 
-import org.apache.commons.compress.archivers.ArchiveEntry;
+import com.diogonunes.jcolor.Attribute;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.log4j.LogManager;
@@ -15,6 +15,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.diogonunes.jcolor.Ansi.colorize;
 
 public class Pack {
     private static final Logger LOGGER = LogManager.getLogger(Pack.class);
@@ -149,11 +151,11 @@ public class Pack {
         // 记录结束时间并计算耗时
         long endTime = System.nanoTime();
         double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
-        LOGGER.info("Backup process completed in: " + durationInSeconds + " seconds");
+        LOGGER.info(colorize("Backup process completed in: " + durationInSeconds + " seconds", Attribute.GREEN_TEXT()));
 
         //上传
-        LOGGER.debug(zipFilePath);
-        //Upload.UploadBackup(new File(zipFilePath));
+        //LOGGER.debug(zipFilePath);
+        Upload.UploadBackup(new File(zipFilePath));
     }
 
     public static void PackBackup(String sourceDir, String TempDirectory, String ZipDirectory) throws FileNotFoundException {
