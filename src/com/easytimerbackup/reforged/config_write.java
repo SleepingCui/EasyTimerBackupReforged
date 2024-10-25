@@ -80,18 +80,16 @@ public class config_write {
                                            
                 -------------------- 
                 
-                Server IP Port (64,67)
+                Server Port (64)
                 -------IP-------  
                                            
-                ----------------  
-                ------Port------  
-                                           
-                ----------------  
+                ----------------   
                 
-                Receive path (72)
+                Receive path (69)
                 -------Config-------  
 
                 --------------------  
+                
                 """;
 
         try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(configFile), "utf-8"))) {

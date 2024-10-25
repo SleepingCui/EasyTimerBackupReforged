@@ -6,7 +6,6 @@ import org.apache.log4j.Logger;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.Serial;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,9 +44,8 @@ public class config_read {
         targetMap.put("server_port", 48);
         targetMap.put("delbackup", 53);
         targetMap.put("server",59);
-        targetMap.put("server_ip",64);
-        targetMap.put("server_port",67);
-        targetMap.put("rev_path",72);
+        targetMap.put("target_server_port",64);
+        targetMap.put("rev_path",69);
 
         Integer lineNumber = targetMap.get(target);
 
@@ -55,10 +53,10 @@ public class config_read {
             return null;
         }
 
-        // Read uploadenabled first
+        // Check Upload,Server mode was enabled
         if (target.equals("uploadenabled") || target.equals("server")) {
             return f_read_config(lineNumber, config_file_path);
-        } else if (target.equals("server_ip") || target.equals("server_port") || target.equals("delbackup") || target.equals("server_ip") || target.equals("server_port") || target.equals("rev_path")){
+        } else if ( target.equals("target_server_port") || target.equals("delbackup")  || target.equals("server_port") || target.equals("rev_path")){
             // Check
             String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
             String UploadServerValue = f_read_config(targetMap.get("server"), config_file_path);

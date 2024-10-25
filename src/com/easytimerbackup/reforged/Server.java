@@ -10,7 +10,7 @@ import java.net.Socket;
 public class Server {
     private static final Logger LOGGER = LogManager.getLogger(Server.class);
     public static final String UPLOAD_DIR = config_read.get_config("rev_path"); // Directory to save uploaded files
-    private static final int PORT = Integer.valueOf(config_read.get_config("server_port")); // Listening port
+    private static final int PORT = Integer.valueOf(config_read.get_config("target_server_port")); // Listening port
 
     public static void handleClient(Socket clientSocket) {
 
