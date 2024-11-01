@@ -154,7 +154,6 @@ public class Pack {
         LOGGER.info(colorize("Backup process completed in: " + durationInSeconds + " seconds", Attribute.GREEN_TEXT()));
 
         //上传
-        //LOGGER.debug(zipFilePath);
         Upload.UploadBackup(new File(zipFilePath));
     }
 

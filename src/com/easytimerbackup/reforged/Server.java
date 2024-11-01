@@ -6,73 +6,94 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Server {
     private static final Logger LOGGER = LogManager.getLogger(Server.class);
-    public static final String UPLOAD_DIR = config_read.get_config("rev_path"); // Directory to save uploaded files
-    private static final int PORT = Integer.valueOf(config_read.get_config("target_server_port")); // Listening port
+    public static String UPLOAD_DIR = config_read.get_config("rev_path"); // Directory to save uploaded files
+    private static int PORT = Integer.valueOf(config_read.get_config("target_server_port")); // Listening port
 
-    public static void handleClient(Socket clientSocket) {
+    public static void UploadServer() {
+        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
+            LOGGER.info("Server listening on port " + PORT);
 
-        try (InputStream in = clientSocket.getInputStream();
-             BufferedInputStream bis = new BufferedInputStream(in);
-             DataInputStream dis = new DataInputStream(bis)) {
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                LOGGER.info("Connection accepted from " + clientSocket.getInetAddress());
 
-            // Read the filename from the input stream
+                // Handle the upload in a separate thread
+                new Thread(() -> handleUpload(clientSocket)).start();
+            }
+        } catch (IOException e) {
+            LOGGER.error("Server error: ", e);
+        }
+    }
+
+    private static void handleUpload(Socket clientSocket) {
+        try {
+            DataInputStream dis = new DataInputStream(clientSocket.getInputStream());
+            DataOutputStream dos = new DataOutputStream(clientSocket.getOutputStream());
+
+            // Read the expected MD5 hash from the client
+            String clientMd5 = dis.readUTF();
+            LOGGER.info("Received expected MD5 from client: " + clientMd5);
+
+            // Read file name and create a new file in the upload directory
             String fileName = dis.readUTF();
-            File outputFile = new File(UPLOAD_DIR, fileName);
+            File file = new File(UPLOAD_DIR, fileName);
 
-            try (BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(outputFile))) {
-                byte[] buffer = new byte[1024];
+            try (FileOutputStream fos = new FileOutputStream(file)) {
+                byte[] buffer = new byte[4096];
                 int bytesRead;
-                long totalBytes = 0;
 
-                // Receive file data
-                while ((bytesRead = bis.read(buffer)) != -1) {
-                    bos.write(buffer, 0, bytesRead);
-                    totalBytes += bytesRead;
+                // Read file data from client
+                while ((bytesRead = dis.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
                 }
-
-                bos.flush();
-                LOGGER.info("File received: " + fileName + ", size: " + totalBytes + " bytes");
-
-                // Send confirmation message to client
-                OutputStream out = clientSocket.getOutputStream();
-                String confirmationMessage = "File upload successful, size: " + totalBytes + " bytes";
-                out.write(confirmationMessage.getBytes());
-                out.flush();
             }
 
-        } catch (IOException e) {
-            e.printStackTrace();
+            // Calculate the MD5 hash of the received file
+            String serverMd5 = calculateMD5(file);
+            LOGGER.info("Calculated MD5 of received file: " + serverMd5);
+
+            // Compare MD5 hashes
+            if (clientMd5.equals(serverMd5)) {
+                dos.writeUTF("ok");
+                LOGGER.info("File uploaded and MD5 verified successfully.");
+            } else {
+                dos.writeUTF("fail");
+                LOGGER.warn("MD5 mismatch. Expected: " + clientMd5 + ", but calculated: " + serverMd5);
+                file.delete(); // Delete the file if MD5 doesn't match
+            }
+        } catch (IOException | NoSuchAlgorithmException e) {
+            LOGGER.error("Error during file upload handling: ", e);
         } finally {
             try {
                 clientSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.error("Failed to close client socket.", e);
             }
         }
     }
 
-    public static void UploadServer() {
-
-        new File(UPLOAD_DIR).mkdirs();
-
-        try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            LOGGER.info("Server started, waiting for client connections...");
-            LOGGER.info("Listening on port " + PORT);
-            LOGGER.info("File Path: " + UPLOAD_DIR);
-
-
-            while (true) {
-                Socket clientSocket = serverSocket.accept();
-                LOGGER.info("Client connected: " + clientSocket.getInetAddress());
-
-                // Handle client requests
-                new Thread(() -> handleClient(clientSocket)).start();
+    private static String calculateMD5(File file) throws IOException, NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        try (InputStream is = Files.newInputStream(file.toPath())) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                md.update(buffer, 0, bytesRead);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
+        byte[] digest = md.digest();
+
+        // Convert the byte array to hex string
+        StringBuilder sb = new StringBuilder();
+        for (byte b : digest) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
 }

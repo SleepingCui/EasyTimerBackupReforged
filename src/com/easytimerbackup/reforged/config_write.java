@@ -73,19 +73,23 @@ public class config_write {
                 -------Config-------  
                                            
                 -------------------- 
+                Enable/disable Verify md5(y/n) (57)
+                -------Config-------
                 
+                --------------------
                 
-                Enable/disable upload server(y/n) (59)
+                                
+                Enable/disable upload server(y/n) (63)
                 -------Config-------  
                                            
                 -------------------- 
                 
-                Server Port (64)
+                Server Port (68)
                 -------IP-------  
                                            
                 ----------------   
                 
-                Receive path (69)
+                Receive path (73)
                 -------Config-------  
 
                 --------------------  

@@ -6,100 +6,110 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.nio.file.Files;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class Upload {
     private static final Logger LOGGER = LogManager.getLogger(Upload.class);
 
     // 上传文件方法
-    private static void UploadBk(String ip, int port, File zipPath, boolean DelBackup) {
+    public static void UploadBk(String ip, int port, File zipPath, boolean DelBackup, boolean VerifyMD5) {
         Socket socket = new Socket();
+        boolean uploadSuccess = false; // 上传成功标志
+
         try {
-            // 设置连接超时时间为10秒（10000毫秒）
-            socket.connect(new InetSocketAddress(ip, port), 10000); // 连接到服务器，超时设置为10秒
+            String fileMd5 = calculateMD5(zipPath);  // 计算文件的MD5
+            LOGGER.info("Calculated MD5: " + fileMd5);
 
-            try (DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
-                 FileInputStream fis = new FileInputStream(zipPath)) {
+            while (!uploadSuccess) { // 循环直到上传成功或失败
+                socket.connect(new InetSocketAddress(ip, port), 5000);
 
-                // 发送文件名
+                DataOutputStream dos = new DataOutputStream(socket.getOutputStream());
+                DataInputStream dis = new DataInputStream(socket.getInputStream());
+
+                // 发送MD5值和文件名
+                dos.writeUTF(fileMd5);
                 dos.writeUTF(zipPath.getName());
 
-                long totalSize = zipPath.length(); // 获取文件总大小
-                long uploadedSize = 0; // 已上传的字节数
-                byte[] buffer = new byte[1024];
-                int length;
+                // 发送文件内容
+                FileInputStream fileInputStream = new FileInputStream(zipPath);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
 
-                // 进度条参数
-                int barLength = 50; // 进度条长度
-
-                // 发送文件数据
-                while ((length = fis.read(buffer)) != -1) {
-                    dos.write(buffer, 0, length);
-                    uploadedSize += length; // 更新已上传的字节数
-
-                    // 计算上传进度
-                    int progressPercentage = (int) ((uploadedSize * 100) / totalSize);
-                    int progressBars = (int) ((double) progressPercentage / 100 * barLength); // 进度条长度比例
-                    String progressBar = "[" + "=".repeat(progressBars) + " ".repeat(barLength - progressBars) + "]";
-
-                    // 格式化进度信息
-                    String progressMessage = String.format("\r%s %d%% | Uploaded: %dMB / %dMB",
-                            progressBar,
-                            progressPercentage,
-                            uploadedSize / (1024 * 1024),
-                            totalSize / (1024 * 1024));
-
-                    // 显示进度条
-                    System.out.print(progressMessage);
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    dos.write(buffer, 0, bytesRead);
                 }
+                dos.flush();
+                fileInputStream.close();
 
-                dos.flush(); // 确保所有数据都被发送
-                socket.shutdownOutput(); // 关闭输出流以指示文件发送完毕
+                // 接收服务端响应
+                String response = dis.readUTF();
+                if ("ok".equals(response)) {
+                    uploadSuccess = true;  // 上传成功
+                    LOGGER.info("Upload successful. Server response: " + response);
 
-                // 接收服务器返回的消息
-                InputStream in = socket.getInputStream();
-                byte[] bufMsg = new byte[1024];
-                int num = in.read(bufMsg);
-                String msg = new String(bufMsg, 0, num);
-                System.out.println(); // 换行
-                LOGGER.info(msg);
+                    if (DelBackup && "y".equals(config_read.get_config("delbackup"))) {  // 删除文件依据配置
+                        if (zipPath.delete()) {
+                            LOGGER.info("Backup file deleted successfully.");
+                        } else {
+                            LOGGER.warn("Failed to delete backup file.");
+                        }
+                    }
+
+                } else if ("fail".equals(response)) {
+                    LOGGER.warn("Server response: fail. Retrying upload...");
+                    socket.close(); // 关闭连接，准备重试
+                } else {
+                    LOGGER.warn("Unexpected response from server: " + response);
+                    break; // 非预期响应，退出循环
+                }
             }
-        } catch (SocketTimeoutException e) {
-            LOGGER.error("Socket timed out");
-            LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
-        } catch (IOException e) {
-            LOGGER.error("I/O exception");
-            LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
+        } catch (IOException | NoSuchAlgorithmException e) {
+            LOGGER.error("Upload failed", e);
         } finally {
             try {
-                socket.close(); // 确保 socket 被关闭
+                socket.close();
             } catch (IOException e) {
-                LOGGER.error(e.getMessage(),e); // 输出堆栈跟踪
-            }
-            if (DelBackup) {  // 删除备份文件
-                try {
-                    zipPath.delete();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                LOGGER.error("Socket close failed", e);
             }
         }
     }
 
-    public static void UploadBackup(File ZipPath) throws IOException {
-        String Enabled = config_read.get_config("uploadenabled");
-        if (Enabled.equals("y")) {
-            String ip = config_read.get_config("server_ip");
-            int port = Integer.parseInt(config_read.get_config("server_port"));
-            String delbackup = config_read.get_config("delbackup");
-            LOGGER.info("Uploading...");
-            if (delbackup.equals("y")) {
-                UploadBk(ip, port, ZipPath, true);
-            } else {
-                UploadBk(ip, port, ZipPath, false);
+    // 计算文件的MD5值
+    private static String calculateMD5(File file) throws IOException, NoSuchAlgorithmException {
+        MessageDigest md = MessageDigest.getInstance("MD5");
+        try (InputStream is = Files.newInputStream(file.toPath())) {
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = is.read(buffer)) != -1) {
+                md.update(buffer, 0, bytesRead);
             }
-        } else {
-            LOGGER.warn("Upload is not enabled");
         }
+        byte[] digest = md.digest();
+
+        // 转换为16进制字符串
+        StringBuilder sb = new StringBuilder();
+        for (byte b : digest) {
+            sb.append(String.format("%02x", b));
+        }
+        return sb.toString();
     }
+    public static void UploadBackup(File zipPath) throws IOException {
+        if (!"y".equals(config_read.get_config("uploadenabled"))) {
+            LOGGER.info("Upload was not enabled.");
+            return;
+        }
+
+        String ip = config_read.get_config("server_ip");
+        int port = Integer.parseInt(config_read.get_config("server_port"));
+        boolean deleteBackup = "y".equals(config_read.get_config("delbackup"));
+        boolean verifyMd5 = "y".equals(config_read.get_config("verifymd5"));
+
+        LOGGER.info("Uploading...");
+        UploadBk(ip, port, zipPath, deleteBackup, verifyMd5);
+    }
+
+
+
 }

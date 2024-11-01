@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class config_read {
     private static final Logger LOGGER = LogManager.getLogger(config_read.class);
@@ -43,37 +44,35 @@ public class config_read {
         targetMap.put("server_ip", 45);
         targetMap.put("server_port", 48);
         targetMap.put("delbackup", 53);
-        targetMap.put("server",59);
-        targetMap.put("target_server_port",64);
-        targetMap.put("rev_path",69);
+        targetMap.put("verifymd5", 57);
+        targetMap.put("server", 63);
+        targetMap.put("target_server_port", 68);
+        targetMap.put("rev_path", 73);
 
         Integer lineNumber = targetMap.get(target);
 
         if (lineNumber == null) {
             return null;
         }
+        // Check if Upload or Server mode is enabled
+        Supplier<String> returnZeroIfDisabled = () -> "0";
 
-        // Check Upload,Server mode was enabled
+        String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
+        String serverValue = f_read_config(targetMap.get("server"), config_file_path);
+
         if (target.equals("uploadenabled") || target.equals("server")) {
-            return f_read_config(lineNumber, config_file_path);
-        } else if ( target.equals("target_server_port") || target.equals("delbackup")  || target.equals("server_port") || target.equals("rev_path")){
-            // Check
-            String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
-            String UploadServerValue = f_read_config(targetMap.get("server"), config_file_path);
-            if ("n".equals(uploadEnabledValue) || "n".equals(UploadServerValue)) {
-                return "0";
-            }
+            return ("n".equals(uploadEnabledValue) || uploadEnabledValue == null)
+                    ? returnZeroIfDisabled.get()
+                    : f_read_config(lineNumber, config_file_path);
 
-            else if ("y".equals(uploadEnabledValue)) {
-                if (f_read_config(lineNumber, config_file_path) == null || f_read_config(lineNumber, config_file_path).isEmpty()) {
-                    LOGGER.error(" The read data is empty!");
-                    System.exit(1); // Terminate the program
-                }
-
-            }
+        } else if (target.equals("target_server_port") || target.equals("delbackup") || target.equals("server_port") || target.equals("rev_path")) {
+            return ("n".equals(uploadEnabledValue) || "n".equals(serverValue) || uploadEnabledValue == null || serverValue == null)
+                    ? returnZeroIfDisabled.get()
+                    : f_read_config(lineNumber, config_file_path);
         }
 
         return f_read_config(lineNumber, config_file_path);
+
     }
 
 
