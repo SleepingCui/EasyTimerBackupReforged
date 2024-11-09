@@ -54,24 +54,29 @@ public class config_read {
         if (lineNumber == null) {
             return null;
         }
-        // Check if Upload or Server mode is enabled
+        // 检查上传或服务器模式是否启用
         Supplier<String> returnZeroIfDisabled = () -> "0";
-
         String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
         String serverValue = f_read_config(targetMap.get("server"), config_file_path);
 
-        if (target.equals("uploadenabled") || target.equals("server")) {
+        if (target.equals("uploadenabled")) {
             return ("n".equals(uploadEnabledValue) || uploadEnabledValue == null)
                     ? returnZeroIfDisabled.get()
                     : f_read_config(lineNumber, config_file_path);
 
+        } else if (target.equals("server")) {
+            return ("n".equals(serverValue) || serverValue == null)
+                    ? returnZeroIfDisabled.get()
+                    : f_read_config(lineNumber, config_file_path);
+
         } else if (target.equals("target_server_port") || target.equals("delbackup") || target.equals("server_port") || target.equals("rev_path")) {
-            return ("n".equals(uploadEnabledValue) || "n".equals(serverValue) || uploadEnabledValue == null || serverValue == null)
+            return ("n".equals(serverValue) || serverValue == null)
                     ? returnZeroIfDisabled.get()
                     : f_read_config(lineNumber, config_file_path);
         }
 
         return f_read_config(lineNumber, config_file_path);
+
 
     }
 

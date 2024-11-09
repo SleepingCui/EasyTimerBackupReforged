@@ -55,7 +55,7 @@ public class Server {
             }
 
             // Calculate the MD5 hash of the received file
-            String serverMd5 = calculateMD5(file);
+            String serverMd5 = CalcMD5.calculateMD5(file);
             LOGGER.info("Calculated MD5 of received file: " + serverMd5);
 
             // Compare MD5 hashes
@@ -78,22 +78,5 @@ public class Server {
         }
     }
 
-    private static String calculateMD5(File file) throws IOException, NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                md.update(buffer, 0, bytesRead);
-            }
-        }
-        byte[] digest = md.digest();
 
-        // Convert the byte array to hex string
-        StringBuilder sb = new StringBuilder();
-        for (byte b : digest) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
 }

@@ -6,8 +6,6 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class Upload {
@@ -19,7 +17,7 @@ public class Upload {
         boolean uploadSuccess = false; // 上传成功标志
 
         try {
-            String fileMd5 = calculateMD5(zipPath);  // 计算文件的MD5
+            String fileMd5 = CalcMD5.calculateMD5(zipPath);  // 计算文件的MD5
             LOGGER.info("Calculated MD5: " + fileMd5);
 
             while (!uploadSuccess) { // 循环直到上传成功或失败
@@ -76,25 +74,7 @@ public class Upload {
         }
     }
 
-    // 计算文件的MD5值
-    private static String calculateMD5(File file) throws IOException, NoSuchAlgorithmException {
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[4096];
-            int bytesRead;
-            while ((bytesRead = is.read(buffer)) != -1) {
-                md.update(buffer, 0, bytesRead);
-            }
-        }
-        byte[] digest = md.digest();
 
-        // 转换为16进制字符串
-        StringBuilder sb = new StringBuilder();
-        for (byte b : digest) {
-            sb.append(String.format("%02x", b));
-        }
-        return sb.toString();
-    }
     public static void UploadBackup(File zipPath) throws IOException {
         if (!"y".equals(config_read.get_config("uploadenabled"))) {
             LOGGER.info("Upload was not enabled.");
