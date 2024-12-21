@@ -13,7 +13,8 @@ import java.security.NoSuchAlgorithmException;
 public class Server {
     private static final Logger LOGGER = LogManager.getLogger(Server.class);
     public static String UPLOAD_DIR = config_read.get_config("rev_path"); // Directory to save uploaded files
-    private static int PORT = Integer.valueOf(config_read.get_config("target_server_port")); // Listening port
+    private static int PORT = Integer.parseInt(config_read.get_config("target_server_port")); // Listening port
+    private static boolean VERIFY_MD5 = "y".equals(config_read.get_config("verifymd5")); // 是否校验MD5
 
     public static void UploadServer() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
@@ -54,18 +55,23 @@ public class Server {
                 }
             }
 
-            // Calculate the MD5 hash of the received file
-            String serverMd5 = CalcMD5.calculateMD5(file);
-            LOGGER.info("Calculated MD5 of received file: " + serverMd5);
+            if (VERIFY_MD5 && !"no-md5".equals(clientMd5)) {
+                // Calculate the MD5 hash of the received file
+                String serverMd5 = CalcMD5.calculateMD5(file);
+                LOGGER.info("Calculated MD5 of received file: " + serverMd5);
 
-            // Compare MD5 hashes
-            if (clientMd5.equals(serverMd5)) {
-                dos.writeUTF("ok");
-                LOGGER.info("File uploaded and MD5 verified successfully.");
+                // Compare MD5 hashes
+                if (clientMd5.equals(serverMd5)) {
+                    dos.writeUTF("ok");
+                    LOGGER.info("File uploaded and MD5 verified successfully.");
+                } else {
+                    dos.writeUTF("fail");
+                    LOGGER.warn("MD5 mismatch. Expected: " + clientMd5 + ", but calculated: " + serverMd5);
+                    file.delete(); // Delete the file if MD5 doesn't match
+                }
             } else {
-                dos.writeUTF("fail");
-                LOGGER.warn("MD5 mismatch. Expected: " + clientMd5 + ", but calculated: " + serverMd5);
-                file.delete(); // Delete the file if MD5 doesn't match
+                dos.writeUTF("ok");
+                LOGGER.info("File uploaded without MD5 verification.");
             }
         } catch (IOException | NoSuchAlgorithmException e) {
             LOGGER.error("Error during file upload handling: ", e);
@@ -77,6 +83,4 @@ public class Server {
             }
         }
     }
-
-
 }

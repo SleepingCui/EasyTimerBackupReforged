@@ -17,8 +17,10 @@ public class Upload {
         boolean uploadSuccess = false; // 上传成功标志
 
         try {
-            String fileMd5 = CalcMD5.calculateMD5(zipPath);  // 计算文件的MD5
-            LOGGER.info("Calculated MD5: " + fileMd5);
+            String fileMd5 = VerifyMD5 ? CalcMD5.calculateMD5(zipPath) : null;  // 根据需求计算文件的MD5
+            if (VerifyMD5) {
+                LOGGER.info("Calculated MD5: " + fileMd5);
+            }
 
             while (!uploadSuccess) { // 循环直到上传成功或失败
                 socket.connect(new InetSocketAddress(ip, port), 5000);
@@ -27,7 +29,7 @@ public class Upload {
                 DataInputStream dis = new DataInputStream(socket.getInputStream());
 
                 // 发送MD5值和文件名
-                dos.writeUTF(fileMd5);
+                dos.writeUTF(VerifyMD5 ? fileMd5 : "no-md5");
                 dos.writeUTF(zipPath.getName());
 
                 // 发送文件内容
@@ -74,7 +76,6 @@ public class Upload {
         }
     }
 
-
     public static void UploadBackup(File zipPath) throws IOException {
         if (!"y".equals(config_read.get_config("uploadenabled"))) {
             LOGGER.info("Upload was not enabled.");
@@ -89,7 +90,4 @@ public class Upload {
         LOGGER.info("Uploading...");
         UploadBk(ip, port, zipPath, deleteBackup, verifyMd5);
     }
-
-
-
 }

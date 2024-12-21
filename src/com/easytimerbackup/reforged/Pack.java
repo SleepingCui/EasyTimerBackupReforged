@@ -1,13 +1,17 @@
 package com.easytimerbackup.reforged;
 
 import com.diogonunes.jcolor.Attribute;
-import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.model.ZipParameters;
+import net.lingala.zip4j.model.enums.CompressionLevel;
+import net.lingala.zip4j.model.enums.CompressionMethod;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -90,33 +94,29 @@ public class Pack {
         }
     }
 
-    // 使用 Apache Commons Compress 压缩文件
-    private static void zipDirectory(String rootDir, String sourceDir, ZipArchiveOutputStream zos) throws IOException {
-        File dir = new File(sourceDir);
-        for (File file : dir.listFiles()) {
-            String entryName = file.getAbsolutePath().substring(rootDir.length() + 1);
-            if (file.isDirectory()) {
-                zipDirectory(rootDir, file.getAbsolutePath(), zos);  // 递归处理子目录
-            } else {
-                // 确保这里使用的是具体的 ZipArchiveEntry
-                ZipArchiveEntry entry = new ZipArchiveEntry(file, entryName);
-                zos.putArchiveEntry(entry);
+    // 使用 zip4j 压缩文件
+    private static void zipDirectoryWithZip4j(String sourceDir, String zipFilePath) {
+        try {
+            ZipFile zipFile = new ZipFile(zipFilePath);
+            ZipParameters parameters = new ZipParameters();
+            parameters.setCompressionMethod(CompressionMethod.DEFLATE);
+            parameters.setCompressionLevel(CompressionLevel.NORMAL);
 
-                try (FileInputStream fis = new FileInputStream(file)) {
-                    byte[] buffer = new byte[1024];
-                    int length;
-                    while ((length = fis.read(buffer)) > 0) {
-                        zos.write(buffer, 0, length);  // 写入压缩文件
-                    }
+            File dir = new File(sourceDir);
+            for (File file : dir.listFiles()) {
+                if (file.isDirectory()) {
+                    zipFile.addFolder(file, parameters);
+                } else {
+                    zipFile.addFile(file, parameters);
                 }
-
-                zos.closeArchiveEntry();  // 关闭当前条目
-                processedFiles++;  // 更新已处理的文件数
-                showProgress();  // 更新进度条
+                processedFiles++;
+                showProgress();
             }
+        } catch (ZipException e) {
+            LOGGER.error("Error creating zip file", e);
+            throw new RuntimeException(e);
         }
     }
-
 
     public static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
         long startTime = System.nanoTime();
@@ -137,13 +137,8 @@ public class Pack {
 
         LOGGER.info("Now Packing...");
 
-        // 压缩临时目录内容到 zip 文件
-        try (FileOutputStream fos = new FileOutputStream(zipFilePath);
-             ZipArchiveOutputStream zos = new ZipArchiveOutputStream(fos)) {
-            zipDirectory(sourceDir, sourceDir, zos);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        // 使用 zip4j 压缩临时目录内容到 zip 文件
+        zipDirectoryWithZip4j(sourceDir, zipFilePath);
 
         System.out.println(); // 压缩完成，换行
         LOGGER.info("Backup completed: " + zipFilePath);
@@ -153,11 +148,11 @@ public class Pack {
         double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
         LOGGER.info(colorize("Backup process completed in: " + durationInSeconds + " seconds", Attribute.GREEN_TEXT()));
 
-        //上传
+        // 上传
         Upload.UploadBackup(new File(zipFilePath));
     }
 
-    public static void PackBackup(String sourceDir, String TempDirectory, String ZipDirectory) throws FileNotFoundException {
+    public static void PackBackup(String sourceDir, String TempDirectory, String ZipDirectory) throws IOException {
         try {
             Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
         } catch (IOException e) {

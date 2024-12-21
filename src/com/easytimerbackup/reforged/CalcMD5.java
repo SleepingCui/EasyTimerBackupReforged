@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.lang.String;
+
 
 public class CalcMD5 {
     // 计算文件的MD5值
@@ -23,8 +25,11 @@ public class CalcMD5 {
         // 转换为16进制字符串
         StringBuilder sb = new StringBuilder();
         for (byte b : digest) {
-            sb.append(String.format("%02x", b));
+            sb.append((b & 0xFF) < 0x10 ? "0" : "").append(Integer.toHexString(b & 0xFF));
         }
+
         return sb.toString();
     }
+
+
 }

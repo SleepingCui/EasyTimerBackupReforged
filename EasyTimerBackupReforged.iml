@@ -47,6 +47,6 @@
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="commons-compress-1.27.1" level="project" />
+    <orderEntry type="library" name="zip4j-2.11.5" level="project" />
   </component>
 </module>
