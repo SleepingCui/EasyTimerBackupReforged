@@ -12,9 +12,9 @@ import java.security.NoSuchAlgorithmException;
 
 public class Server {
     private static final Logger LOGGER = LogManager.getLogger(Server.class);
-    public static String UPLOAD_DIR = config_read.get_config("rev_path"); // Directory to save uploaded files
-    private static int PORT = Integer.parseInt(config_read.get_config("target_server_port")); // Listening port
-    private static boolean VERIFY_MD5 = "y".equals(config_read.get_config("verifymd5")); // 是否校验MD5
+    public static String UPLOAD_DIR = config_read.get_config("receive_path"); // Directory to save uploaded files
+    private static int PORT = Integer.parseInt(config_read.get_config("server.port")); // Listening port
+    private static boolean VERIFY_MD5 = "y".equals(config_read.get_config("verify_md5")); // 是否校验MD5
 
     public static void UploadServer() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {

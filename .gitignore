@@ -33,4 +33,5 @@ bin/
 config.cfg
 *.zip
 /logs/
-/config.yml
+/src/resources/config.json
+/config.json

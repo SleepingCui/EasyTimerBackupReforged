@@ -20,9 +20,9 @@ public class Timer {
 
     public static void timer_backup() {
         // 从配置中读取时间
-        String read_hour = config_read.get_config("time_hour");
-        String read_minute = config_read.get_config("time_minute");
-        String read_second = config_read.get_config("time_second");
+        String read_hour = config_read.get_config("backup_time.hours");
+        String read_minute = config_read.get_config("backup_time.minutes");
+        String read_second = config_read.get_config("backup_time.seconds");
 
         // 验证时间是否合法
         int hour=0, minute=0, second=0;
@@ -40,9 +40,9 @@ public class Timer {
             //throw new RuntimeException("Invalid time configuration: " + e.getMessage());
         }
 
-        String read_source_path = config_read.get_config("source_dir");
-        String read_temp_path = config_read.get_config("temp_dir");
-        String read_backup_path = config_read.get_config("backup_dir");
+        String read_source_path = config_read.get_config("directory_settings.source_path");
+        String read_temp_path = config_read.get_config("directory_settings.temp_path");
+        String read_backup_path = config_read.get_config("directory_settings.backup_path");
         String colored_time = colorize(read_hour + ":" + read_minute + ":" + read_second, Attribute.CYAN_TEXT());
 
         LOGGER.info("Starting backup...");
@@ -52,10 +52,10 @@ public class Timer {
         LOGGER.info("ZipDirectory: " + read_backup_path);
 
         // 检查上传是否启用
-        String upload_enabled = config_read.get_config("uploadenabled");
+        String upload_enabled = config_read.get_config("upload_function");
         if (upload_enabled.equals("y")) {
-            int port = Integer.parseInt(config_read.get_config("server_port"));
-            String ip = config_read.get_config("server_ip");
+            int port = Integer.parseInt(config_read.get_config("server.port"));
+            String ip = config_read.get_config("server.ip");
             LOGGER.info("Upload mode was enabled!");
             LOGGER.info("Server address: " + ip + ":" + port);
         } else {

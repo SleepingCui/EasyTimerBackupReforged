@@ -49,7 +49,7 @@ public class Upload {
                     uploadSuccess = true;  // 上传成功
                     LOGGER.info("Upload successful. Server response: " + response);
 
-                    if (DelBackup && "y".equals(config_read.get_config("delbackup"))) {  // 删除文件依据配置
+                    if (DelBackup && "y".equals(config_read.get_config("delete_backup_after_upload"))) {  // 删除文件依据配置
                         if (zipPath.delete()) {
                             LOGGER.info("Backup file deleted successfully.");
                         } else {
@@ -77,15 +77,15 @@ public class Upload {
     }
 
     public static void UploadBackup(File zipPath) throws IOException {
-        if (!"y".equals(config_read.get_config("uploadenabled"))) {
+        if (!"y".equals(config_read.get_config("upload_function"))) {
             LOGGER.info("Upload was not enabled.");
             return;
         }
 
-        String ip = config_read.get_config("server_ip");
-        int port = Integer.parseInt(config_read.get_config("server_port"));
-        boolean deleteBackup = "y".equals(config_read.get_config("delbackup"));
-        boolean verifyMd5 = "y".equals(config_read.get_config("verifymd5"));
+        String ip = config_read.get_config("server.ip");
+        int port = Integer.parseInt(config_read.get_config("server.port"));
+        boolean deleteBackup = "y".equals(config_read.get_config("delete_backup_after_upload"));
+        boolean verifyMd5 = "y".equals(config_read.get_config("verify_md5"));
 
         LOGGER.info("Uploading...");
         UploadBk(ip, port, zipPath, deleteBackup, verifyMd5);

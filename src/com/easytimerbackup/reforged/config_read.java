@@ -1,58 +1,99 @@
 package com.easytimerbackup.reforged;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.yaml.snakeyaml.Yaml;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.function.Supplier;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 public class config_read {
     private static final Logger LOGGER = LogManager.getLogger(config_read.class);
-    private static final String CONFIG_FILE_PATH = "config.yaml";
-    private static Map<String, Object> config;
+    private static final String CONFIG_FILE = "config.json";  // Target configuration file
+    private static JSONObject config;
 
     static {
-        try (InputStream inputStream = config_read.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH)) {
-            if (inputStream == null) {
-                throw new IllegalStateException("Configuration file not found: " + CONFIG_FILE_PATH);
+        try {
+            // Get the current working directory
+            String userDir = System.getProperty("user.dir");
+            LOGGER.info("Current working directory: " + userDir);
+
+            // Configuration file path
+            File configFile = new File(userDir, CONFIG_FILE);
+            if (!configFile.exists()) {
+                LOGGER.error("Configuration file not found: " + configFile.getAbsolutePath());
+                throw new IllegalStateException("Configuration file not found: " + CONFIG_FILE);
             }
-            Yaml yaml = new Yaml();
-            config = yaml.load(inputStream);
-        } catch (Exception e) {
-            LOGGER.error("Failed to load configuration file.", e);
-            throw new RuntimeException(e);
+
+            // Read the file
+            try (FileInputStream inputStream = new FileInputStream(configFile)) {
+                config = JSON.parseObject(inputStream, JSONObject.class);
+                LOGGER.info("Configuration file loaded successfully: " + configFile.getAbsolutePath());
+            }
+
+        } catch (IOException e) {
+            LOGGER.error("Failed to load configuration file", e);
+            throw new RuntimeException("Failed to load configuration file", e);
         }
     }
 
     public static String get_config(String key) {
-        if (config == null || !config.containsKey(key)) {
-            LOGGER.warn("Configuration key not found: " + key);
+        if (config == null) {
+            LOGGER.warn("Configuration not loaded");
             return null;
         }
 
-        // 检查上传或服务器模式是否启用
-        Supplier<String> returnZeroIfDisabled = () -> "0";
-        String uploadEnabledValue = (String) config.get("uploadenabled");
-        String serverValue = (String) config.get("server");
-
-        if ("uploadenabled".equals(key)) {
-            return ("n".equals(uploadEnabledValue) || uploadEnabledValue == null)
-                    ? returnZeroIfDisabled.get()
-                    : (String) config.get(key);
-
-        } else if ("server".equals(key)) {
-            return ("n".equals(serverValue) || serverValue == null)
-                    ? returnZeroIfDisabled.get()
-                    : (String) config.get(key);
-
-        } else if ("target_server_port".equals(key) || "delbackup".equals(key) || "server_port".equals(key) || "rev_path".equals(key)) {
-            return ("n".equals(serverValue) || serverValue == null)
-                    ? returnZeroIfDisabled.get()
-                    : (String) config.get(key);
+        // Handle nested fields for backup_time
+        if (key.equals("backup_time.hours") || key.equals("backup_time.minutes") || key.equals("backup_time.seconds")) {
+            JSONObject backupTime = config.getJSONObject("backup_time");
+            if (backupTime != null) {
+                if (key.equals("backup_time.hours")) {
+                    return backupTime.getString("hours");
+                } else if (key.equals("backup_time.minutes")) {
+                    return backupTime.getString("minutes");
+                } else if (key.equals("backup_time.seconds")) {
+                    return backupTime.getString("seconds");
+                }
+            }
         }
 
-        return (String) config.get(key);
+        // Handle nested fields for directory_settings
+        if (key.equals("directory_settings.source_path") ||
+                key.equals("directory_settings.temp_path") ||
+                key.equals("directory_settings.backup_path")) {
+
+            JSONObject directorySettings = config.getJSONObject("directory_settings");
+            if (directorySettings != null) {
+                if (key.equals("directory_settings.source_path")) {
+                    return directorySettings.getString("source_path");
+                } else if (key.equals("directory_settings.temp_path")) {
+                    return directorySettings.getString("temp_path");
+                } else if (key.equals("directory_settings.backup_path")) {
+                    return directorySettings.getString("backup_path");
+                }
+            }
+        }
+
+        // Handle nested fields for server
+        if (key.equals("server.port") || key.equals("server.ip")) {
+            JSONObject serverSettings = config.getJSONObject("server");
+            if (serverSettings != null) {
+                if (key.equals("server.port")) {
+                    return serverSettings.getString("port");
+                } else if (key.equals("server.ip")) {
+                    return serverSettings.getString("ip");
+                }
+            }
+        }
+
+        // Handle other simple key-value pairs
+        if (config.containsKey(key)) {
+            return config.getString(key);
+        }
+
+        LOGGER.warn("Configuration item not found: " + key);
+        return null;
     }
 }
