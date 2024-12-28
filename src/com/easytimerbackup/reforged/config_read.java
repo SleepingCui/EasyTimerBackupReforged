@@ -2,84 +2,57 @@ package com.easytimerbackup.reforged;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.yaml.snakeyaml.Yaml;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStream;
 import java.util.Map;
 import java.util.function.Supplier;
 
 public class config_read {
     private static final Logger LOGGER = LogManager.getLogger(config_read.class);
-    @SuppressWarnings("CallToPrintStackTrace")
-    private static String f_read_config(int lineToRead, String path) {
-        try (BufferedReader br = new BufferedReader(new FileReader(path))) {
-            String line;
-            int lineNumber = 1;
-            while ((line = br.readLine()) != null) {
-                if (lineNumber == lineToRead) {
-                    return line;
-                }
-                lineNumber++;
+    private static final String CONFIG_FILE_PATH = "config.yaml";
+    private static Map<String, Object> config;
+
+    static {
+        try (InputStream inputStream = config_read.class.getClassLoader().getResourceAsStream(CONFIG_FILE_PATH)) {
+            if (inputStream == null) {
+                throw new IllegalStateException("Configuration file not found: " + CONFIG_FILE_PATH);
             }
-        } catch (IOException e) {
-            LOGGER.error(e.getMessage(),e);
+            Yaml yaml = new Yaml();
+            config = yaml.load(inputStream);
+        } catch (Exception e) {
+            LOGGER.error("Failed to load configuration file.", e);
+            throw new RuntimeException(e);
         }
-        return path;
     }
 
-    public static String get_config(String target) {
-        config_write.isFileExists();
-        String config_file_path = "config.cfg";
-
-        Map<String, Integer> targetMap = new HashMap<>();
-        targetMap.put("time_hour", 17);
-        targetMap.put("time_minute", 18);
-        targetMap.put("time_second", 19);
-        targetMap.put("source_dir", 32);
-        targetMap.put("temp_dir", 33);
-        targetMap.put("backup_dir", 34);
-        targetMap.put("uploadenabled", 40);
-        targetMap.put("server_ip", 45);
-        targetMap.put("server_port", 48);
-        targetMap.put("delbackup", 53);
-        targetMap.put("verifymd5", 57);
-        targetMap.put("server", 63);
-        targetMap.put("target_server_port", 68);
-        targetMap.put("rev_path", 73);
-
-        Integer lineNumber = targetMap.get(target);
-
-        if (lineNumber == null) {
+    public static String get_config(String key) {
+        if (config == null || !config.containsKey(key)) {
+            LOGGER.warn("Configuration key not found: " + key);
             return null;
         }
+
         // 检查上传或服务器模式是否启用
         Supplier<String> returnZeroIfDisabled = () -> "0";
-        String uploadEnabledValue = f_read_config(targetMap.get("uploadenabled"), config_file_path);
-        String serverValue = f_read_config(targetMap.get("server"), config_file_path);
+        String uploadEnabledValue = (String) config.get("uploadenabled");
+        String serverValue = (String) config.get("server");
 
-        if (target.equals("uploadenabled")) {
+        if ("uploadenabled".equals(key)) {
             return ("n".equals(uploadEnabledValue) || uploadEnabledValue == null)
                     ? returnZeroIfDisabled.get()
-                    : f_read_config(lineNumber, config_file_path);
+                    : (String) config.get(key);
 
-        } else if (target.equals("server")) {
+        } else if ("server".equals(key)) {
             return ("n".equals(serverValue) || serverValue == null)
                     ? returnZeroIfDisabled.get()
-                    : f_read_config(lineNumber, config_file_path);
+                    : (String) config.get(key);
 
-        } else if (target.equals("target_server_port") || target.equals("delbackup") || target.equals("server_port") || target.equals("rev_path")) {
+        } else if ("target_server_port".equals(key) || "delbackup".equals(key) || "server_port".equals(key) || "rev_path".equals(key)) {
             return ("n".equals(serverValue) || serverValue == null)
                     ? returnZeroIfDisabled.get()
-                    : f_read_config(lineNumber, config_file_path);
+                    : (String) config.get(key);
         }
 
-        return f_read_config(lineNumber, config_file_path);
-
-
+        return (String) config.get(key);
     }
-
-
-
 }

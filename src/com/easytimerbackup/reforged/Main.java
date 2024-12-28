@@ -9,9 +9,13 @@ public class Main {
         Loginit.initLog();
 
         LOGGER.info("====== Loading EasyTimerBackupReforged ... ======");
+
+        //检查配置文件
+        config_write.ensureConfigFileExists();
+
         String isUpServerEnabled = config_read.get_config("server");
         if (isUpServerEnabled.equals("y")) {
-            Server.UploadServer();
+            Server.UploadServer(); // Server
         }
         else {
             Timer.timer_backup();

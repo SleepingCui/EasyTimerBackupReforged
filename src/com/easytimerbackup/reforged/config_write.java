@@ -2,115 +2,71 @@ package com.easytimerbackup.reforged;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.Constructor;
 
 import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class config_write {
     private static final Logger LOGGER = LogManager.getLogger(config_write.class);
+    private static final String CONFIG_FILE = "config.yml";
 
-    private static void writeCfg() {
-        File configFile = new File("config.cfg");
-        try {
-            // 创建新文件
-            configFile.createNewFile();
+    private static void writeConfig() {
+        File configFile = new File(CONFIG_FILE);
+
+        // YAML content as a Map
+        Map<String, Object> config = new HashMap<>();
+
+        config.put("version", "v0.0.1");
+
+        config.put("backup_time", Map.of(
+                "hours", 11,
+                "minutes", 45,
+                "seconds", 14
+        ));
+
+        config.put("directory_settings", Map.of(
+                "source_path", "C:\\SourceFolder\\",
+                "temp_path", "C:\\BackupTemp\\",
+                "backup_path", "C:\\BackupFolder\\"
+        ));
+
+        config.put("upload_function", "y");
+        config.put("server", Map.of(
+                "ip", "127.0.0.1",
+                "port", 8080
+        ));
+
+        config.put("delete_backup_after_upload", "y");
+        config.put("verify_md5", "y");
+        config.put("upload_server_enabled", "y");
+        config.put("receive_path", "C:\\ReceiveFolder\\");
+
+        DumperOptions options = new DumperOptions();
+        options.setPrettyFlow(true);
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+
+        Yaml yaml = new Yaml(options);
+
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(configFile), "utf-8")) {
+            yaml.dump(config, writer);
+            LOGGER.info("Configuration file created successfully.");
         } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        // 配置文件内容
-        String cfg = """  
-                EasyTimerBackup Config  
-                v0.0.1  
-                =================================================================  
-                Do not change the number of lines in the configuration file!  
-                Otherwise the read will fail!  
-                =================================================================  
-                   
-                                
-                
-                Backup time (hours/minutes/seconds) a value line.(17,18,19)  
-                  
-                Example:  
-                11      Hours  
-                45      Minutes  
-                14      Seconds  
-                -------Config-------  
-                
-                
-                
-                --------------------  
-                                
-                
-                Directory settings (source path/temp path/backup path) one path and one line.(32,33,34)  
-                 
-                 
-                Example:  
-                C:\\SourceFolder\\  (/home/SourceFolder/)  
-                C:\\BackupTemp\\    (/home/BackupTemp/)  
-                C:\\BackupFolder\\  (/home/BackupFolder/)  
-                
-                -------Config-------  
-                       
-                       
-                                
-                --------------------  
-                 
-                         
-                Enable/disable file upload function(y/n) (40)  
-                -------Config-------  
-                                           
-                --------------------  
-                
-                Server IP Port (45,48)
-                -------IP-------  
-                                           
-                ----------------  
-                ------Port------  
-                                           
-                ----------------  
-                
-                Enable/disable Delete Backup File after uploading(y/n) (53)
-                -------Config-------  
-                                           
-                -------------------- 
-                Enable/disable Verify md5(y/n) (57)
-                -------Config-------
-                
-                --------------------
-                
-                                
-                Enable/disable upload server(y/n) (63)
-                -------Config-------  
-                                           
-                -------------------- 
-                
-                Server Port (68)
-                -------IP-------  
-                                           
-                ----------------   
-                
-                Receive path (73)
-                -------Config-------  
-
-                --------------------  
-                
-                """;
-
-        try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(new FileOutputStream(configFile), "utf-8"))) {
-            writer.println(cfg);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to write configuration file", e);
         }
     }
- 
-    public static void isFileExists() {
-        File configFile = new File("config.cfg");
+
+    public static void ensureConfigFileExists() {
+        File configFile = new File(CONFIG_FILE);
         if (!configFile.exists()) {
-                LOGGER.info("Generating configuration file...");
-            writeCfg();
+            LOGGER.info("Generating configuration file...");
+            writeConfig();
             System.exit(0);
         }
     }
+
+
 }

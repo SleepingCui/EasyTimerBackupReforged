@@ -48,5 +48,6 @@
       </library>
     </orderEntry>
     <orderEntry type="library" name="zip4j-2.11.5" level="project" />
+    <orderEntry type="library" name="snakeyaml-2.3" level="project" />
   </component>
 </module>
