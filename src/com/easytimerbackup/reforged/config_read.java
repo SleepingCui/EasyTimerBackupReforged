@@ -77,6 +77,7 @@ public class config_read {
         }
 
         // Handle nested fields for server
+
         if (key.equals("server.port") || key.equals("server.ip")) {
             JSONObject serverSettings = config.getJSONObject("server");
             if (serverSettings != null) {
@@ -87,6 +88,8 @@ public class config_read {
                 }
             }
         }
+
+
 
         // Handle other simple key-value pairs
         if (config.containsKey(key)) {

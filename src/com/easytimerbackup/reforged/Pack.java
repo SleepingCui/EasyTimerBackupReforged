@@ -110,58 +110,61 @@ public class Pack {
         return Math.round(filesizeGB * 100) / 100.0; // 保留两位小数
     }
 
-    public static void Pack(File SourceDirectory, File TempDirectory, File ZipDirectory) throws IOException {
+    public static void Pack(String sourceDir, String tempDirectory, String zipDirectory) throws IOException {
+
         long startTime = System.nanoTime();
 
-        LOGGER.info("SourceDirectory: " + SourceDirectory.getAbsolutePath());
-        LOGGER.info("TempDirectory: " + TempDirectory.getAbsolutePath());
-        LOGGER.info("ZipDirectory: " + ZipDirectory.getAbsolutePath());
+        // 转换输入路径为 File 对象
+        File sourceDirectory = new File(sourceDir);
+        File tempDir = new File(tempDirectory);
+        File zipDir = new File(zipDirectory);
 
-        // 复制源文件到临时目录
-        LOGGER.info("Copying files to temporary directory...");
-        CopyFiles(SourceDirectory, TempDirectory);
-        String sourceDir = TempDirectory.toString();
+        LOGGER.info("SourceDirectory: " + sourceDirectory.getAbsolutePath());
+        LOGGER.info("TempDirectory: " + tempDir.getAbsolutePath());
+        LOGGER.info("ZipDirectory: " + zipDir.getAbsolutePath());
 
-        // 获取文件总数
-        totalFiles = 0;
-        processedFiles = 0;
-        countTotalFiles(TempDirectory);
-        LOGGER.debug(" Total files to process: " + totalFiles);
-
-        // 获取当前时间戳用于命名 zip 文件
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
-        String timestamp = LocalDateTime.now().format(formatter);
-        String zipFilePath = ZipDirectory.toString() + "\\backup-" + timestamp + ".zip";
-
-        LOGGER.info("Now Packing...");
-
-        // 使用 zip4j 压缩临时目录内容到 zip 文件
-        zipDirectory(sourceDir, zipFilePath);
-
-        LOGGER.info("Backup completed: " + zipFilePath);
-
-        // 记录结束时间并计算耗时
-        long endTime = System.nanoTime();
-        double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
-        LOGGER.info(colorize("Backup process completed in: " + durationInSeconds + " seconds", Attribute.GREEN_TEXT()));
-
-        // 显示文件大小
-        LOGGER.info("Backup file size: " + getFileSize(SourceDirectory)+" GB");
-
-        // 上传
-        LOGGER.info("Uploading backup...");
-        Upload.UploadBackup(new File(zipFilePath));
-        LOGGER.info("Upload completed.");
-    }
-
-    public static void PackBackup(String sourceDir, String TempDirectory, String ZipDirectory) throws IOException {
         try {
-            Pack(new File(sourceDir), new File(TempDirectory), new File(ZipDirectory));
+            // 复制源文件到临时目录
+            LOGGER.info("Copying files to temporary directory...");
+            CopyFiles(sourceDirectory, tempDir);
+
+            // 获取文件总数
+            totalFiles = 0;
+            processedFiles = 0;
+            countTotalFiles(tempDir);
+            LOGGER.debug("Total files to process: " + totalFiles);
+
+            // 获取当前时间戳用于命名 zip 文件
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+            String timestamp = LocalDateTime.now().format(formatter);
+            String zipFilePath = zipDir + "\\backup-" + timestamp + ".zip";
+
+            LOGGER.info("Now Packing...");
+
+            // 使用 zip4j 压缩临时目录内容到 zip 文件
+            zipDirectory(tempDir.toString(), zipFilePath);
+
+            LOGGER.info("Backup completed: " + zipFilePath);
+
+            // 记录结束时间并计算耗时
+            long endTime = System.nanoTime();
+            double durationInSeconds = (endTime - startTime) / 1_000_000_000.0;
+            LOGGER.info(colorize("Backup process completed in: " + durationInSeconds + " seconds", Attribute.GREEN_TEXT()));
+
+            // 显示文件大小
+            LOGGER.info("Backup file size: " + getFileSize(sourceDirectory) + " GB");
+
+            // 上传
+            LOGGER.info("Uploading backup...");
+            Upload.UploadBackup(new File(zipFilePath));
+            LOGGER.info("Upload completed.");
+
         } catch (IOException e) {
             LOGGER.error("Backup process failed", e);
             throw new RuntimeException(e);
         }
     }
+
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

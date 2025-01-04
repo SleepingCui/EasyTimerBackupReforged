@@ -1,12 +1,13 @@
 <component name="ArtifactManager">
-  <artifact type="jar" build-on-make="true" name="EasyTimerBackupReforged:jar">
+  <artifact type="jar" name="EasyTimerBackupReforged:jar">
     <output-path>$PROJECT_DIR$/out/artifacts/EasyTimerBackupReforged_jar</output-path>
     <root id="archive" name="EasyTimerBackupReforged.jar">
       <element id="module-output" name="EasyTimerBackupReforged" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/lib/log4j-1.2.17.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/annotations-24.0.0.jar" path-in-jar="/" />
-      <element id="extracted-dir" path="$PROJECT_DIR$/lib/JColor-5.5.1.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/zip4j-2.11.5.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/log4j-1.2.17.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/JColor-5.5.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/fastjson-1.2.83.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

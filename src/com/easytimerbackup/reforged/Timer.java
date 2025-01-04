@@ -84,7 +84,7 @@ public class Timer {
         scheduler.scheduleAtFixedRate(() -> {
             LOGGER.info("====== Backup Start! ======");
             try {
-                Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
+                Pack.Pack(read_source_path, read_temp_path, read_backup_path);
             } catch (IOException e) {
                 LOGGER.error("Backup failed: " + e.getMessage());
                 throw new RuntimeException(e);

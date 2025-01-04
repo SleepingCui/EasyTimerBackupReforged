@@ -22,8 +22,6 @@ public class config_write {
         // JSON content as a Map
         Map<String, Object> config = new HashMap<>();
 
-        // Adding version item
-        config.put("version", "v0.0.1");
 
         // Setting up backup_time with hours, minutes, seconds
         Map<String, Integer> backupTime = new HashMap<>();
