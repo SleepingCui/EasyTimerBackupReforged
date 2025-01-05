@@ -37,6 +37,7 @@ public class config_write {
         directorySettings.put("backup_path", "");
         config.put("directory_settings", directorySettings);
 
+
         // Empty strings for fields that should not have a value
         config.put("upload_function", "");
         config.put("upload_server_enabled", "");
@@ -44,11 +45,15 @@ public class config_write {
         config.put("delete_backup_after_upload", "");
         config.put("verify_md5", "");
 
+
         // Server configuration with port number and empty IP
         Map<String, Object> server = new HashMap<>();
         server.put("ip", "");
         server.put("port", 8000);
         config.put("server", server);
+
+        // Backup Thread Config
+        config.put("backup_threads",4);
 
         // Convert the Map to JSON format and write to file
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(configFile), "UTF-8")) {

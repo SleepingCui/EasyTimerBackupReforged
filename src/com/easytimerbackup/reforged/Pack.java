@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -24,14 +25,16 @@ import static com.diogonunes.jcolor.Ansi.colorize;
 
 public class Pack {
     private static final Logger LOGGER = LogManager.getLogger(Pack.class);
-    private static final ExecutorService executor = Executors.newFixedThreadPool(4); // 固定线程池
+
+    private static final String bk_threads = config_read.get_config("backup_threads"); //线程数
+    private static final ExecutorService executor = Executors.newFixedThreadPool(Integer.parseInt(Objects.requireNonNull(bk_threads))); // 线程池
 
     private static int totalFiles = 0; // 文件总数
     private static int processedFiles = 0; // 已处理文件数
 
     // 递归统计文件总数
     private static void countTotalFiles(File dir) {
-        for (File file : dir.listFiles()) {
+        for (File file : Objects.requireNonNull(dir.listFiles())) {
             if (file.isDirectory()) {
                 countTotalFiles(file);
             } else {
@@ -123,6 +126,7 @@ public class Pack {
         LOGGER.info("TempDirectory: " + tempDir.getAbsolutePath());
         LOGGER.info("ZipDirectory: " + zipDir.getAbsolutePath());
 
+        LOGGER.debug("Backup Threads: " + bk_threads);
         try {
             // 复制源文件到临时目录
             LOGGER.info("Copying files to temporary directory...");
@@ -178,4 +182,7 @@ public class Pack {
             }
         }));
     }
+
+
+
 }
