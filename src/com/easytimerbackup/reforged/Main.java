@@ -12,7 +12,7 @@ import static java.lang.System.exit;
 public class Main {
     public static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static void main(String[] args) {
-        Loginit.initLog();
+        Loginit.initLog(); // 加载log4j配置文件
         LOGGER.info("====== Loading EasyTimerBackupReforged ... ======");
 
         //检查配置文件
@@ -22,7 +22,7 @@ public class Main {
         if (isUpServerEnabled.equals("y")) {
             Server.UploadServer(); // Server
         }
-        else if (isUpServerEnabled.equals("n") || isUpServerEnabled.equals(" ")) {
+        else if (isUpServerEnabled.equals("n") || isUpServerEnabled.equals("")) {
             Timer.timer_backup();
         }
         else {
