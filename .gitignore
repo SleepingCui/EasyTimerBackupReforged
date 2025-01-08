@@ -35,3 +35,4 @@ config.cfg
 /logs/
 /src/resources/config.json
 /config.json
+/log4j.properties
