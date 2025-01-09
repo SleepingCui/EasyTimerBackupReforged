@@ -27,16 +27,17 @@ public class Pack {
     private static final Logger LOGGER = LogManager.getLogger(Pack.class);
     private static final String bk_threads = config_read.get_config("backup_threads"); // 线程数
     private static final int threadCount;
+    private static final int DefaultBackupThreads = 4;
 
     static {
-        int tempThreadCount = 4; // 默认值
+        int tempThreadCount;
         try {
             tempThreadCount = Integer.parseInt(Objects.requireNonNull(bk_threads));
             if (tempThreadCount <= 0) { // 检查解析后的值是否为0或负数
                 tempThreadCount = 4;
             }
         } catch (NumberFormatException e) {
-            // 如果解析失败保持为4
+            tempThreadCount = DefaultBackupThreads;// 如果解析失败保持为4
         }
 
         threadCount = tempThreadCount;
