@@ -177,7 +177,7 @@ public class Pack {
             // 上传
             LOGGER.info("Uploading backup...");
             Upload.UploadBackup(new File(zipFilePath));
-            LOGGER.info("Upload completed.");
+
 
         } catch (IOException e) {
             LOGGER.error("Backup process failed", e);
