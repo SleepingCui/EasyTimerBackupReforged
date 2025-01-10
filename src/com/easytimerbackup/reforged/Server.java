@@ -6,15 +6,14 @@ import org.apache.log4j.Logger;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.file.Files;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public class Server {
     private static final Logger LOGGER = LogManager.getLogger(Server.class);
     public static String UPLOAD_DIR = config_read.get_config("receive_path"); // Directory to save uploaded files
-    private static int PORT = Integer.parseInt(config_read.get_config("server.port")); // Listening port
-    private static boolean VERIFY_MD5 = "y".equals(config_read.get_config("verify_md5")); // 是否校验MD5
+    private static final int PORT = Integer.parseInt(Objects.requireNonNull(config_read.get_config("server.port"))); // Listening port
+    private static final boolean VERIFY_MD5 = "y".equals(config_read.get_config("verify_md5")); // 是否校验MD5
 
     public static void UploadServer() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {

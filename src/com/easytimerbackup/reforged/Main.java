@@ -13,11 +13,12 @@ public class Main {
     public static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static void main(String[] args) {
         Loginit.initLog(); // 加载log4j配置文件
+
         LOGGER.info("====== Loading EasyTimerBackupReforged ... ======");
 
         //检查配置文件
         config_write.ensureConfigFileExists();
-        String isUpServerEnabled = config_read.get_config("server");
+        String isUpServerEnabled = config_read.get_config("upload_server_enabled");
 
         if (isUpServerEnabled.equals("y")) {
             Server.UploadServer(); // Server
