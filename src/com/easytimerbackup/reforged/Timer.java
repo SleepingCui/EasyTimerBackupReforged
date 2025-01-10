@@ -18,6 +18,10 @@ import static java.lang.System.exit;
 public class Timer {
     private static final Logger LOGGER = LogManager.getLogger(Timer.class);
 
+    private static boolean isValidPath(String path) {   // 辅助方法：检查路径是否有效
+        return path != null && !path.trim().isEmpty();
+    }
+
     public static void timer_backup() {
         // 从配置中读取时间
         String read_hour = config_read.get_config("backup_time.hours");
@@ -44,6 +48,21 @@ public class Timer {
         String read_temp_path = config_read.get_config("directory_settings.temp_path");
         String read_backup_path = config_read.get_config("directory_settings.backup_path");
         String colored_time = colorize(read_hour + ":" + read_minute + ":" + read_second, Attribute.CYAN_TEXT());
+
+
+
+        // 检查路径合法性
+        if (!isValidPath(read_backup_path)) {
+            LOGGER.error("Invalid backup path provided: " + read_backup_path + " Please provide a valid backup path.");
+            exit(1);
+        } else if (!isValidPath(read_source_path)) {
+            LOGGER.error("Invalid source path provided: " + read_source_path + " Please provide a valid source path.");
+            exit(1);
+        } else if (read_temp_path == null || read_temp_path.trim().isEmpty()) {
+            LOGGER.error("Invalid temporary path provided: " + read_temp_path + " Please provide a valid temporary path.");
+            exit(1);
+        }
+
 
         LOGGER.info("Backup Time: " + colored_time);
         LOGGER.info("SourceDirectory: " + read_source_path);
