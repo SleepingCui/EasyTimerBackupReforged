@@ -174,10 +174,7 @@ public class Pack {
             // 显示文件大小
             LOGGER.info("Backup file size: " + getFileSize(sourceDirectory) + " GB");
 
-            // 上传
-            LOGGER.info("Uploading backup...");
-            Upload.UploadBackup(new File(zipFilePath));
-            LOGGER.info("Upload completed.");
+
 
         } catch (IOException e) {
             LOGGER.error("Backup process failed", e);

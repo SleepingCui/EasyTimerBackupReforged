@@ -2,6 +2,9 @@
 EasyTimerBackupReforged
 By SleepingCui https://github.com/SleepingCui/EasyTimerBackupReforged
 */
+
+
+//   ***DEV VER***
 package com.easytimerbackup.reforged;
 
 import org.apache.log4j.LogManager;
@@ -15,6 +18,7 @@ public class Main {
         Loginit.initLog(); // 加载log4j配置文件
 
         LOGGER.info("====== Loading EasyTimerBackupReforged ... ======");
+        LOGGER.info("You are using DEV version! \nVarious bugs can arise. To use the stable release, go to the GitHub page to download the stable release.");
 
         //检查配置文件
         config_write.ensureConfigFileExists();
