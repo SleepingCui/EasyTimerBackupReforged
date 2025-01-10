@@ -45,7 +45,6 @@ public class Timer {
         String read_backup_path = config_read.get_config("directory_settings.backup_path");
         String colored_time = colorize(read_hour + ":" + read_minute + ":" + read_second, Attribute.CYAN_TEXT());
 
-        LOGGER.info("Starting backup...");
         LOGGER.info("Backup Time: " + colored_time);
         LOGGER.info("SourceDirectory: " + read_source_path);
         LOGGER.info("TempDirectory: " + read_temp_path);
