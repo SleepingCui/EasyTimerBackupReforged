@@ -58,7 +58,7 @@ public class Timer {
         } else if (!isValidPath(read_source_path)) {
             LOGGER.error("Invalid source path provided: " + read_source_path + " Please provide a valid source path.");
             exit(1);
-        } else if (read_temp_path == null || read_temp_path.trim().isEmpty()) {
+        } else if (read_temp_path == null) {
             LOGGER.error("Invalid temporary path provided: " + read_temp_path + " Please provide a valid temporary path.");
             exit(1);
         }
