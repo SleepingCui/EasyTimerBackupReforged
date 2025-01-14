@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="zip4j-2.11.5">
+  <library name="commons-compress-1.27.1">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/lib/zip4j-2.11.5.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/commons-compress-1.27.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

@@ -54,6 +54,8 @@ public class config_write {
 
         // Backup Thread Config
         config.put("backup_threads",4);
+        // Compression format Config
+        config.put("compression_format","zip");
 
         // Convert the Map to JSON format and write to file
         try (Writer writer = new OutputStreamWriter(new FileOutputStream(configFile), "UTF-8")) {

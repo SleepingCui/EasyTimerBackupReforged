@@ -36,3 +36,4 @@ config.cfg
 /src/resources/config.json
 /config.json
 /log4j.properties
+/.idea/GrepConsole.xml
