@@ -7,6 +7,7 @@ import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.util.Calendar;
+import java.util.Objects;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -47,6 +48,7 @@ public class Timer {
         String read_source_path = config_read.get_config("directory_settings.source_path");
         String read_temp_path = config_read.get_config("directory_settings.temp_path");
         String read_backup_path = config_read.get_config("directory_settings.backup_path");
+        String read_compression_format = config_read.get_config("compression_format");
         String colored_time = colorize(read_hour + ":" + read_minute + ":" + read_second, Attribute.CYAN_TEXT());
 
 
@@ -62,12 +64,18 @@ public class Timer {
             LOGGER.error("Invalid temporary path provided: " + read_temp_path + " Please provide a valid temporary path.");
             exit(1);
         }
+        //检查文件格式合法性
+        else if (!Objects.equals(read_compression_format, "zip") && !Objects.equals(read_compression_format, "targz")) {
+            LOGGER.error("Invalid compression format provided: " + read_compression_format +". Please provide 'zip' or 'targz'");
+            exit(1);
+        }
 
 
         LOGGER.info("Backup Time: " + colored_time);
         LOGGER.info("SourceDirectory: " + read_source_path);
         LOGGER.info("TempDirectory: " + read_temp_path);
-        LOGGER.info("ZipDirectory: " + read_backup_path);
+        LOGGER.info("OutputDirectory: " + read_backup_path);
+        LOGGER.info("CompressionFormat: " + read_compression_format);
 
         // 检查上传是否启用
         String upload_enabled = config_read.get_config("upload_function");
