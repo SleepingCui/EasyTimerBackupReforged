@@ -1,17 +1,17 @@
 package com.easytimerbackup.reforged;
 
 import com.diogonunes.jcolor.Attribute;
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
-import net.lingala.zip4j.model.ZipParameters;
-import net.lingala.zip4j.model.enums.CompressionLevel;
-import net.lingala.zip4j.model.enums.CompressionMethod;
+import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
+import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
+import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
+import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
+import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
@@ -97,30 +97,75 @@ public class Pack {
         }
     }
 
-    // 使用 zip4j 压缩文件
-    private static void zipDirectory(String sourceDir, String zipFilePath) {
-        try {
-            ZipFile zipFile = new ZipFile(zipFilePath);
-            ZipParameters parameters = new ZipParameters();
-            parameters.setCompressionMethod(CompressionMethod.DEFLATE);
-            parameters.setCompressionLevel(CompressionLevel.NORMAL);
-
-            File dir = new File(sourceDir);
-            for (File file : dir.listFiles()) {
-                if (file.isDirectory()) {
-                    LOGGER.debug(" Adding folder to zip: " + file.getAbsolutePath());
-                    zipFile.addFolder(file, parameters);
-                } else {
-                    LOGGER.debug(" Adding file to zip: " + file.getAbsolutePath());
-                    zipFile.addFile(file, parameters);
+    // 通用压缩方法，支持 ZIP 或 TAR.GZ
+    public static void Compress(String sourceDir, String outPath, String kind) {
+        File dir = new File(sourceDir);
+        try (OutputStream fileOut = new FileOutputStream(outPath)) {
+            if ("zip".equalsIgnoreCase(kind)) {
+                // Create ZIP file
+                try (ZipArchiveOutputStream zipOut = new ZipArchiveOutputStream(fileOut)) {
+                    zipOut.setMethod(ZipArchiveOutputStream.DEFLATED); // Use DEFLATE compression for ZIP
+                    zipOut.setLevel(6); // Compression level (6 is normal)
+                    addFilesToArchive(dir, dir.getAbsolutePath(), zipOut, kind);
                 }
-                processedFiles++; // Update processed files count but no progress shown
+            } else if ("targz".equalsIgnoreCase(kind)) {
+                // Create TAR.GZ file
+                try (GzipCompressorOutputStream gzOut = new GzipCompressorOutputStream(fileOut);
+                     TarArchiveOutputStream tarOut = new TarArchiveOutputStream(gzOut)) {
+                    tarOut.setLongFileMode(TarArchiveOutputStream.LONGFILE_GNU); // Handle long file names
+                    addFilesToArchive(dir, dir.getAbsolutePath(), tarOut, kind);
+                }
+            } else {
+                throw new IllegalArgumentException("Unsupported kind: " + kind);
             }
-        } catch (ZipException e) {
-            LOGGER.error("Error creating zip file", e);
+        } catch (IOException e) {
+            LOGGER.error("Error creating " + kind + " file", e);
             throw new RuntimeException(e);
         }
     }
+
+    // 将文件或文件夹添加到压缩包中
+    private static void addFilesToArchive(File fileToAdd, String baseDirPath, OutputStream outStream, String kind) throws IOException {
+        if ("zip".equalsIgnoreCase(kind)) {
+            ZipArchiveOutputStream zipOut = (ZipArchiveOutputStream) outStream;
+            if (fileToAdd.isDirectory()) {
+                for (File file : fileToAdd.listFiles()) {
+                    addFilesToArchive(file, baseDirPath, zipOut, kind);
+                }
+            } else {
+                String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
+                ZipArchiveEntry entry = new ZipArchiveEntry(fileToAdd, relativePath);
+                zipOut.putArchiveEntry(entry);
+                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd)) {
+                    IOUtils.copy(fileInputStream, zipOut);
+                }
+                zipOut.closeArchiveEntry();
+                processedFiles++;
+                LOGGER.debug("Adding file to zip: " + fileToAdd.getAbsolutePath());
+            }
+        } else if ("targz".equalsIgnoreCase(kind)) {
+            TarArchiveOutputStream tarOut = (TarArchiveOutputStream) outStream;
+            if (fileToAdd.isDirectory()) {
+                for (File file : fileToAdd.listFiles()) {
+                    addFilesToArchive(file, baseDirPath, tarOut, kind);
+                }
+            } else {
+                String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
+                TarArchiveEntry entry = new TarArchiveEntry(fileToAdd, relativePath);
+                tarOut.putArchiveEntry(entry);
+                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd)) {
+                    IOUtils.copy(fileInputStream, tarOut);
+                }
+                tarOut.closeArchiveEntry();
+                processedFiles++;
+                LOGGER.debug("Adding file to tar.gz: " + fileToAdd.getAbsolutePath());
+            }
+        }
+    }
+
+
+
+
 
     // 获取压缩文件大小
     private static double getFileSize(@NotNull File file) {
@@ -129,18 +174,29 @@ public class Pack {
         return Math.round(filesizeGB * 100) / 100.0; // 保留两位小数
     }
 
-    public static void Pack(String sourceDir, String tempDirectory, String zipDirectory) throws IOException {
+    // 获取当前时间戳用于命名压缩文件
+    private static String NameOutFile(File OutDir) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
+        String timestamp = LocalDateTime.now().format(formatter);
+        if ((Objects.equals(config_read.get_config("compression_format"), "zip"))) {
+            return OutDir + "\\backup-" + timestamp + ".zip";
+        } else {
+            return OutDir + "\\backup-" + timestamp + ".tar.gz";
+        }
+    }
+
+    public static void Pack(String sourceDir, String tempDirectory, String OutDirectory) throws IOException {
 
         long startTime = System.nanoTime();
 
         // 转换输入路径为 File 对象
         File sourceDirectory = new File(sourceDir);
         File tempDir = new File(tempDirectory);
-        File zipDir = new File(zipDirectory);
+        File OutDir = new File(OutDirectory);
 
         LOGGER.info("SourceDirectory: " + sourceDirectory.getAbsolutePath());
         LOGGER.info("TempDirectory: " + tempDir.getAbsolutePath());
-        LOGGER.info("ZipDirectory: " + zipDir.getAbsolutePath());
+        LOGGER.info("OutputDirectory: " + OutDir.getAbsolutePath());
 
         LOGGER.debug("Backup Threads: " + bk_threads);
         try {
@@ -154,17 +210,17 @@ public class Pack {
             countTotalFiles(tempDir);
             LOGGER.debug("Total files to process: " + totalFiles);
 
-            // 获取当前时间戳用于命名 zip 文件
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss");
-            String timestamp = LocalDateTime.now().format(formatter);
-            String zipFilePath = zipDir + "\\backup-" + timestamp + ".zip";
-
             LOGGER.info("Now Packing...");
+            // 压缩临时目录内容到压缩文件
+            String OutputFileDir = NameOutFile(OutDir);
+            if (config_read.get_config("compression_format").equals("zip")) {
+                Compress(tempDir.toString(), OutputFileDir, "zip");
+            }
+            else {
+                Compress(sourceDirectory.toString(), OutputFileDir, "tar.gz");
+            }
 
-            // 使用 zip4j 压缩临时目录内容到 zip 文件
-            zipDirectory(tempDir.toString(), zipFilePath);
-
-            LOGGER.info("Backup completed: " + zipFilePath);
+            LOGGER.info("Backup completed: " +  OutputFileDir);
 
             // 记录结束时间并计算耗时
             long endTime = System.nanoTime();
@@ -176,7 +232,7 @@ public class Pack {
 
             // 上传
             LOGGER.info("Uploading backup...");
-            Upload.UploadBackup(new File(zipFilePath));
+            Upload.UploadBackup(new File(OutputFileDir));
 
 
         } catch (IOException e) {
