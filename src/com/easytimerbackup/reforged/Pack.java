@@ -6,7 +6,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
 import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.diogonunes.jcolor.Ansi.colorize;
 
@@ -28,6 +28,7 @@ public class Pack {
     private static final String bk_threads = config_read.get_config("backup_threads"); // 线程数
     private static final int threadCount;
     private static final int DefaultBackupThreads = 4;   // 默认线程数
+
 
     static {
         int tempThreadCount;
@@ -46,7 +47,7 @@ public class Pack {
     private static final ExecutorService executor = Executors.newFixedThreadPool(threadCount); // 线程池
 
     private static int totalFiles = 0; // 文件总数
-    private static int processedFiles = 0; // 已处理文件数
+    private static final AtomicInteger processedFiles = new AtomicInteger(); // 已处理文件数
 
     // 递归统计文件总数
     private static void countTotalFiles(File dir) {
@@ -84,7 +85,7 @@ public class Pack {
                             LOGGER.info("Copied file: " + file.getAbsolutePath() + " to " + destFile.getAbsolutePath());
                         }
                         synchronized (Pack.class) {
-                            processedFiles++; // Update processed files count but no progress shown
+                            processedFiles.getAndIncrement(); // Update processed files count but no progress shown
                         }
                     } catch (IOException e) {
                         LOGGER.error("Error copying: " + file.getAbsolutePath(), e);
@@ -123,46 +124,56 @@ public class Pack {
             throw new RuntimeException(e);
         }
     }
+    //通用复制方法
 
     // 将文件或文件夹添加到压缩包中
     private static void addFilesToArchive(File fileToAdd, String baseDirPath, OutputStream outStream, String kind) throws IOException {
         if ("zip".equalsIgnoreCase(kind)) {
             ZipArchiveOutputStream zipOut = (ZipArchiveOutputStream) outStream;
             if (fileToAdd.isDirectory()) {
-                for (File file : fileToAdd.listFiles()) {
+                for (File file : Objects.requireNonNull(fileToAdd.listFiles())) {
                     addFilesToArchive(file, baseDirPath, zipOut, kind);
                 }
             } else {
                 String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
                 ZipArchiveEntry entry = new ZipArchiveEntry(fileToAdd, relativePath);
                 zipOut.putArchiveEntry(entry);
-                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd)) {
-                    IOUtils.copy(fileInputStream, zipOut);
+                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd);
+                     BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                        zipOut.write(buffer, 0, bytesRead);
+                    }
                 }
                 zipOut.closeArchiveEntry();
-                processedFiles++;
+                processedFiles.getAndIncrement();
                 LOGGER.debug("Adding file to zip: " + fileToAdd.getAbsolutePath());
             }
         } else if ("targz".equalsIgnoreCase(kind)) {
             TarArchiveOutputStream tarOut = (TarArchiveOutputStream) outStream;
             if (fileToAdd.isDirectory()) {
-                for (File file : fileToAdd.listFiles()) {
+                for (File file : Objects.requireNonNull(fileToAdd.listFiles())) {
                     addFilesToArchive(file, baseDirPath, tarOut, kind);
                 }
             } else {
                 String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
                 TarArchiveEntry entry = new TarArchiveEntry(fileToAdd, relativePath);
                 tarOut.putArchiveEntry(entry);
-                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd)) {
-                    IOUtils.copy(fileInputStream, tarOut);
+                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd);
+                     BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+                    while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                        tarOut.write(buffer, 0, bytesRead);
+                    }
                 }
                 tarOut.closeArchiveEntry();
-                processedFiles++;
+                processedFiles.getAndIncrement();
                 LOGGER.debug("Adding file to tar.gz: " + fileToAdd.getAbsolutePath());
             }
         }
     }
-
 
 
 
@@ -206,14 +217,14 @@ public class Pack {
 
             // 获取文件总数
             totalFiles = 0;
-            processedFiles = 0;
+            processedFiles.set(0);
             countTotalFiles(tempDir);
             LOGGER.debug("Total files to process: " + totalFiles);
 
             LOGGER.info("Now Packing...");
             // 压缩临时目录内容到压缩文件
             String OutputFileDir = NameOutFile(OutDir);
-            if (config_read.get_config("compression_format").equals("zip")) {
+            if (Objects.equals(config_read.get_config("compression_format"), "zip")) {
                 Compress(tempDir.toString(), OutputFileDir, "zip");
             }
             else {
@@ -254,7 +265,6 @@ public class Pack {
             }
         }));
     }
-
 
 
 }
