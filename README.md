@@ -4,7 +4,7 @@
 
 [中文](https://github.com/SleepingCui/EasyTimerBackupReforged/blob/master/README_zh_CN.md)
 
-## Features
+### Features
 
 - Allows users to specify directories to be backed up
 
@@ -21,6 +21,10 @@
 2. In the directory where the program will generate `config.json` file, configuration is complete, re-run the program, the program will automatically load them!
 
    
+
+### Warning
+
+​    **This project can only run in an environment with Java 17 or higher.**
 
 ### License
 
