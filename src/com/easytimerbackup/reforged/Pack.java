@@ -124,59 +124,51 @@ public class Pack {
             throw new RuntimeException(e);
         }
     }
-    //通用复制方法
 
     // 将文件或文件夹添加到压缩包中
     private static void addFilesToArchive(File fileToAdd, String baseDirPath, OutputStream outStream, String kind) throws IOException {
         if ("zip".equalsIgnoreCase(kind)) {
             ZipArchiveOutputStream zipOut = (ZipArchiveOutputStream) outStream;
-            if (fileToAdd.isDirectory()) {
-                for (File file : Objects.requireNonNull(fileToAdd.listFiles())) {
-                    addFilesToArchive(file, baseDirPath, zipOut, kind);
-                }
-            } else {
-                String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
-                ZipArchiveEntry entry = new ZipArchiveEntry(fileToAdd, relativePath);
-                zipOut.putArchiveEntry(entry);
-                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd);
-                     BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                        zipOut.write(buffer, 0, bytesRead);
-                    }
-                }
-                zipOut.closeArchiveEntry();
-                processedFiles.getAndIncrement();
-                LOGGER.debug("Adding file to zip: " + fileToAdd.getAbsolutePath());
-            }
+            processFile(fileToAdd, baseDirPath, zipOut, kind);
         } else if ("targz".equalsIgnoreCase(kind)) {
             TarArchiveOutputStream tarOut = (TarArchiveOutputStream) outStream;
-            if (fileToAdd.isDirectory()) {
-                for (File file : Objects.requireNonNull(fileToAdd.listFiles())) {
-                    addFilesToArchive(file, baseDirPath, tarOut, kind);
-                }
-            } else {
-                String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
+            processFile(fileToAdd, baseDirPath, tarOut, kind);
+        }
+    }
+
+    private static void processFile(File fileToAdd, String baseDirPath, Object archiveOut, String kind) throws IOException {
+        if (fileToAdd.isDirectory()) {
+            for (File file : Objects.requireNonNull(fileToAdd.listFiles())) {
+                processFile(file, baseDirPath, archiveOut, kind);
+            }
+        } else {
+            String relativePath = fileToAdd.getAbsolutePath().substring(baseDirPath.length() + 1);
+            if ("zip".equalsIgnoreCase(kind)) {
+                ZipArchiveOutputStream zipOut = (ZipArchiveOutputStream) archiveOut;
+                ZipArchiveEntry entry = new ZipArchiveEntry(fileToAdd, relativePath);
+                zipOut.putArchiveEntry(entry);
+                writeFileToStream(fileToAdd, zipOut);
+                zipOut.closeArchiveEntry();
+            } else if ("targz".equalsIgnoreCase(kind)) {
+                TarArchiveOutputStream tarOut = (TarArchiveOutputStream) archiveOut;
                 TarArchiveEntry entry = new TarArchiveEntry(fileToAdd, relativePath);
                 tarOut.putArchiveEntry(entry);
-                try (FileInputStream fileInputStream = new FileInputStream(fileToAdd);
-                     BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
-                    byte[] buffer = new byte[1024];
-                    int bytesRead;
-                    while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
-                        tarOut.write(buffer, 0, bytesRead);
-                    }
-                }
+                writeFileToStream(fileToAdd, tarOut);
                 tarOut.closeArchiveEntry();
-                processedFiles.getAndIncrement();
-                LOGGER.debug("Adding file to tar.gz: " + fileToAdd.getAbsolutePath());
             }
         }
     }
 
-
-
+    private static void writeFileToStream(File file, OutputStream out) throws IOException {
+        try (FileInputStream fileInputStream = new FileInputStream(file);
+             BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream)) {
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = bufferedInputStream.read(buffer)) != -1) {
+                out.write(buffer, 0, bytesRead);
+            }
+        }
+    }
 
     // 获取压缩文件大小
     private static double getFileSize(@NotNull File file) {
