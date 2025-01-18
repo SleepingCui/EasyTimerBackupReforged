@@ -4,31 +4,24 @@
 
 [中文](https://github.com/SleepingCui/EasyTimerBackupReforged/blob/master/README_zh_CN.md)
 
-### Features
+## Features
 
-- Allows users to specify directories to be backed up
+1. Allows users to specify directories to back up.  
+2. Customizable backup destination folder.  
+3. Scheduled backups.  
+4. Support for selecting compression formats.  
 
-- Customizable backup destination folder
+## Configuration
 
-- Schedule backups at regular intervals
+1. When the program runs for the first time, it will automatically generate a configuration file and exit.  
+2. Configure the `config.json` file in the directory where it was generated, then restart the program to automatically load the settings!  
 
-  
+## Note
 
-### How to configure
+**This project can only run in a Java 17 or later environment.**
 
-1. The first time you run the program, it will automatically generate a configuration file and exit.
+## License
 
-2. In the directory where the program will generate `config.json` file, configuration is complete, re-run the program, the program will automatically load them!
-
-   
-
-### Warning
-
-​    **This project can only run in an environment with Java 17 or higher.**
-
-### License
-
-This program is licensed under the GPLv2 License. See the LICENSE file for more details.
-
+This program is licensed under the GPLv2.
 
 
