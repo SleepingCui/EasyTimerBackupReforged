@@ -188,7 +188,7 @@ public class Pack {
         }
     }
 
-    public static void Pack(String sourceDir, String tempDirectory, String OutDirectory) throws IOException {
+    public static void PackBackup(String sourceDir, String tempDirectory, String OutDirectory) throws IOException {
 
         long startTime = System.nanoTime();
 

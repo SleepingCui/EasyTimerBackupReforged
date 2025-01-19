@@ -12,7 +12,7 @@ import java.io.IOException;
 public class config_read {
     private static final Logger LOGGER = LogManager.getLogger(config_read.class);
     private static final String CONFIG_FILE = "config.json";  // Target configuration file
-    private static JSONObject config;
+    private static final JSONObject config;
 
     static {
         try {
@@ -49,12 +49,16 @@ public class config_read {
         if (key.equals("backup_time.hours") || key.equals("backup_time.minutes") || key.equals("backup_time.seconds")) {
             JSONObject backupTime = config.getJSONObject("backup_time");
             if (backupTime != null) {
-                if (key.equals("backup_time.hours")) {
-                    return backupTime.getString("hours");
-                } else if (key.equals("backup_time.minutes")) {
-                    return backupTime.getString("minutes");
-                } else if (key.equals("backup_time.seconds")) {
-                    return backupTime.getString("seconds");
+                switch (key) {
+                    case "backup_time.hours" -> {
+                        return backupTime.getString("hours");
+                    }
+                    case "backup_time.minutes" -> {
+                        return backupTime.getString("minutes");
+                    }
+                    case "backup_time.seconds" -> {
+                        return backupTime.getString("seconds");
+                    }
                 }
             }
         }
@@ -66,12 +70,16 @@ public class config_read {
 
             JSONObject directorySettings = config.getJSONObject("directory_settings");
             if (directorySettings != null) {
-                if (key.equals("directory_settings.source_path")) {
-                    return directorySettings.getString("source_path");
-                } else if (key.equals("directory_settings.temp_path")) {
-                    return directorySettings.getString("temp_path");
-                } else if (key.equals("directory_settings.backup_path")) {
-                    return directorySettings.getString("backup_path");
+                switch (key) {
+                    case "directory_settings.source_path" -> {
+                        return directorySettings.getString("source_path");
+                    }
+                    case "directory_settings.temp_path" -> {
+                        return directorySettings.getString("temp_path");
+                    }
+                    case "directory_settings.backup_path" -> {
+                        return directorySettings.getString("backup_path");
+                    }
                 }
             }
         }
@@ -83,7 +91,7 @@ public class config_read {
             if (serverSettings != null) {
                 if (key.equals("server.port")) {
                     return serverSettings.getString("port");
-                } else if (key.equals("server.ip")) {
+                } else {
                     return serverSettings.getString("ip");
                 }
             }

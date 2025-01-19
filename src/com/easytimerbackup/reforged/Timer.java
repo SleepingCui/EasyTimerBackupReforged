@@ -32,9 +32,9 @@ public class Timer {
         // 验证时间是否合法
         int hour=0, minute=0, second=0;
         try {
-            hour = Integer.parseInt(read_hour);
-            minute = Integer.parseInt(read_minute);
-            second = Integer.parseInt(read_second);
+            hour = Integer.parseInt(Objects.requireNonNull(read_hour));
+            minute = Integer.parseInt(Objects.requireNonNull(read_minute));
+            second = Integer.parseInt(Objects.requireNonNull(read_second));
 
             if (hour < 0 || hour > 23 || minute < 0 || minute > 59 || second < 0 || second > 59) {
                 throw new IllegalArgumentException("Invalid time provided!");
@@ -61,7 +61,7 @@ public class Timer {
             LOGGER.error("Invalid source path provided: " + read_source_path + " Please provide a valid source path.");
             exit(1);
         } else if (read_temp_path == null) {
-            LOGGER.error("Invalid temporary path provided: " + read_temp_path + " Please provide a valid temporary path.");
+            LOGGER.error("Invalid temporary path. Please provide a valid temporary path.");
             exit(1);
         }
         //检查文件格式合法性
@@ -78,9 +78,9 @@ public class Timer {
         LOGGER.info("CompressionFormat: " + read_compression_format);
 
         // 检查上传是否启用
-        String upload_enabled = config_read.get_config("upload_function");
-        if (upload_enabled.equals("y")) {
-            int port = Integer.parseInt(config_read.get_config("server.port"));
+        String upload_enabled = config_read.get_config("enable_upload_function");
+        if (Objects.equals(upload_enabled, "true")) {
+            int port = Integer.parseInt(Objects.requireNonNull(config_read.get_config("server.port")));
             String ip = config_read.get_config("server.ip");
             LOGGER.info("Upload mode was enabled!");
             LOGGER.info("Server address: " + ip + ":" + port);
@@ -110,7 +110,7 @@ public class Timer {
         scheduler.scheduleAtFixedRate(() -> {
             LOGGER.info("====== Backup Start! ======");
             try {
-                Pack.Pack(read_source_path, read_temp_path, read_backup_path);
+                Pack.PackBackup(read_source_path, read_temp_path, read_backup_path);
             } catch (IOException e) {
                 LOGGER.error("Backup failed: " + e.getMessage());
                 throw new RuntimeException(e);
