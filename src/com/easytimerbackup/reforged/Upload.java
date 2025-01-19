@@ -7,6 +7,7 @@ import java.io.*;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
+import java.util.Objects;
 
 public class Upload {
     private static final Logger LOGGER = LogManager.getLogger(Upload.class);
@@ -77,15 +78,15 @@ public class Upload {
     }
 
     public static void UploadBackup(File zipPath) throws IOException {
-        if (!"y".equals(config_read.get_config("upload_function"))) {
+        if (!"true".equals(config_read.get_config("enable_upload_function"))) {
             LOGGER.info("Upload was not enabled.");
             return;
         }
 
         String ip = config_read.get_config("server.ip");
-        int port = Integer.parseInt(config_read.get_config("server.port"));
-        boolean deleteBackup = "y".equals(config_read.get_config("delete_backup_after_upload"));
-        boolean verifyMd5 = "y".equals(config_read.get_config("verify_md5"));
+        int port = Integer.parseInt(Objects.requireNonNull(config_read.get_config("server.port")));
+        boolean deleteBackup = "true".equals(config_read.get_config("delete_backup_after_upload"));
+        boolean verifyMd5 = "true".equals(config_read.get_config("enable_verify_md5"));
 
         LOGGER.info("Uploading...");
         UploadBk(ip, port, zipPath, deleteBackup, verifyMd5);

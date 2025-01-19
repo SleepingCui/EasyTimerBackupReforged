@@ -7,6 +7,8 @@ package com.easytimerbackup.reforged;
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
 
+import java.util.Objects;
+
 import static java.lang.System.exit;
 
 public class Main {
@@ -18,12 +20,12 @@ public class Main {
 
         //检查配置文件
         config_write.ensureConfigFileExists();
-        String isUpServerEnabled = config_read.get_config("upload_server_enabled");
+        String isUpServerEnabled = config_read.get_config("enable_upload_server");
 
-        if (isUpServerEnabled.equals("y")) {
+        if (Objects.requireNonNull(isUpServerEnabled).equals("true")) {
             Server.UploadServer(); // Server
         }
-        else if (isUpServerEnabled.equals("n") || isUpServerEnabled.equals("")) {
+        else if (isUpServerEnabled.equals("n") || isUpServerEnabled.isEmpty()) {
             Timer.timer_backup();
         }
         else {

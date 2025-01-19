@@ -13,21 +13,21 @@ import java.util.Properties;
 public class Loginit {
     private static final Logger LOGGER = LogManager.getLogger(Loginit.class);
     private static final String log4j_config_str = """
-            logFolder = logs
-            
-            log4j.rootLogger = debug,stdout,file1
-            
-            log4j.appender.stdout = org.apache.log4j.ConsoleAppender
-            log4j.appender.stdout.Target = System.out
-            log4j.appender.stdout.layout = org.apache.log4j.PatternLayout
-            log4j.appender.stdout.layout.ConversionPattern = %d{yyyy-MM-dd HH:mm:ss} %-5p%m%n
-            
-            log4j.appender.file1 = org.apache.log4j.DailyRollingFileAppender
-            log4j.appender.file1.File = ${logFolder}/log.log
-            log4j.appender.file1.Append = true
-            log4j.appender.file1.Threshold = INFO
-            log4j.appender.file1.layout = org.apache.log4j.PatternLayout
-            log4j.appender.file1.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss} %p %m%n""";
+logFolder = logs
+
+log4j.rootLogger = debug,stdout,file1
+
+log4j.appender.stdout = org.apache.log4j.ConsoleAppender
+log4j.appender.stdout.Target = System.out
+log4j.appender.stdout.layout = org.apache.log4j.PatternLayout
+log4j.appender.stdout.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss} %-5p %m%n
+
+log4j.appender.file1 = org.apache.log4j.DailyRollingFileAppender
+log4j.appender.file1.File = ${logFolder}/log.log
+log4j.appender.file1.Append = true
+log4j.appender.file1.Threshold = INFO
+log4j.appender.file1.layout = org.apache.log4j.PatternLayout
+log4j.appender.file1.layout.ConversionPattern = %-d{yyyy-MM-dd HH:mm:ss} %p %m%n""";
 
     public static void initLog() {
         FileInputStream fileInputStream = null;

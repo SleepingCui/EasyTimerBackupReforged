@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +27,8 @@ public class config_write {
         // Setting up backup_time with hours, minutes, seconds
         Map<String, Integer> backupTime = new HashMap<>();
         backupTime.put("hours", 12);
-        backupTime.put("minutes", 00);
-        backupTime.put("seconds", 00);
+        backupTime.put("minutes", 0);
+        backupTime.put("seconds", 0);
         config.put("backup_time", backupTime);
 
         // Directory settings with empty paths
@@ -39,11 +40,11 @@ public class config_write {
 
 
         // Empty strings for fields that should not have a value
-        config.put("upload_function", "");
-        config.put("upload_server_enabled", "");
+        config.put("enable_upload_function", false);
+        config.put("enable_upload_server", false);
         config.put("receive_path", "");
-        config.put("delete_backup_after_upload", "");
-        config.put("verify_md5", "");
+        config.put("delete_backup_after_upload", false);
+        config.put("enable_verify_md5", false);
 
 
         // Server configuration with port number and empty IP
@@ -58,7 +59,7 @@ public class config_write {
         config.put("compression_format","zip");
 
         // Convert the Map to JSON format and write to file
-        try (Writer writer = new OutputStreamWriter(new FileOutputStream(configFile), "UTF-8")) {
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(configFile), StandardCharsets.UTF_8)) {
             String jsonContent = JSON.toJSONString(config, true); // Pretty-print JSON
             writer.write(jsonContent);
             LOGGER.info("Configuration file created successfully.");
