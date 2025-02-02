@@ -37,3 +37,4 @@ config.cfg
 /config.json
 /log4j.properties
 /.idea/GrepConsole.xml
+/.attach_pid7877
